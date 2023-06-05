@@ -11,13 +11,8 @@ ENTITY Idecode IS
 			read_data 	: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 			ALU_result	: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 			RegWrite 	: IN 	STD_LOGIC;
-<<<<<<< HEAD
 			MemtoReg 	: IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			RegDst 		: IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );;
-=======
-			MemtoReg 	: IN 	STD_LOGIC;
-			RegDst 		: IN 	STD_LOGIC;
->>>>>>> 172d992f8b088c653a05e3fb3314e990089d6643
 			Sign_extend : OUT 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 			clock,reset	: IN 	STD_LOGIC );
 END Idecode;
@@ -48,7 +43,7 @@ BEGIN
 	read_data_2 <= register_array( 
 			      CONV_INTEGER( read_register_2_address ) );
 					-- Mux for Register Write Address
-<<<<<<< HEAD
+
    write_register_address <= write_register_address_1 WHEN RegDst = "01"  ELSE 
 							write_register_address_0  WHEN RegDst = "00"  ELSE 
 							CONV_STD_LOGIC_VECTOR( 31, 5 ) WHEN RegDst = "10"  ELSE 
@@ -58,13 +53,6 @@ BEGIN
 				  read_data WHEN ( MemtoReg = "01" ) ELSE  
 				  PC_plus_4 WHEN ( MemtoReg = "10" ) ELSE   ---CONV_STD_LOGIC_VECTOR( 31, 32 )
 				  others=>'0';
-=======
-   write_register_address <= write_register_address_1 
-			WHEN RegDst = '1'  			ELSE write_register_address_0;
-					-- Mux to bypass data memory for Rformat instructions
-	write_data <= ALU_result( 31 DOWNTO 0 ) 
-			WHEN ( MemtoReg = '0' ) 	ELSE read_data;
->>>>>>> 172d992f8b088c653a05e3fb3314e990089d6643
 					-- Sign Extend 16-bits to 32-bits
     	Sign_extend <= X"0000" & Instruction_immediate_value
 		WHEN Instruction_immediate_value(15) = '0'

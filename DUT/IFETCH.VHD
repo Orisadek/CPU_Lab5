@@ -51,7 +51,7 @@ inst_memory: altsyncram
 		PC_out 			<= PC;
 		PC_plus_4_out 	<= PC_plus_4;
 						-- send address to inst. memory address register
-<<<<<<< HEAD
+
 		Mem_Addr <= next_PC;
 						-- Adder to increment PC by 4        
       	PC_plus_4( PC_size-1 DOWNTO 2 )  <= PC( 9 DOWNTO 2 ) + 1;
@@ -63,30 +63,14 @@ inst_memory: altsyncram
 		next_PC <= MUXres when Jump = "00" else 
 					data_reg(PC_size-1 DOWNTO 2 ) when Jump = "01" else --jr
 					JumpAdress( PC_size-1 DOWNTO 2 ) when Jump = "10" --jal,j
-				 
-=======
-		Mem_Addr <= Next_PC;
-						-- Adder to increment PC by 4        
-      	PC_plus_4( 9 DOWNTO 2 )  <= PC( 9 DOWNTO 2 ) + 1;
-       	PC_plus_4( 1 DOWNTO 0 )  <= "00";
-						-- Mux to select Branch Address or PC + 4        
-		Next_PC  <= X"00" WHEN Reset = '1' ELSE
-			Add_result  WHEN ( ( Branch = '1' ) AND ( Zero = '1' ) ) 
-			ELSE   PC_plus_4( 9 DOWNTO 2 );
->>>>>>> 172d992f8b088c653a05e3fb3314e990089d6643
 	PROCESS
 		BEGIN
 			WAIT UNTIL ( clock'EVENT ) AND ( clock = '1' );
 			IF reset = '1' THEN
-<<<<<<< HEAD
+
 				   PC(PC_size-1 DOWNTO 2) <= "00000000" ; 
 			ELSE 
 				   PC(PC_size-1 DOWNTO 2 ) <= next_PC;
-=======
-				   PC( 9 DOWNTO 2) <= "00000000" ; 
-			ELSE 
-				   PC( 9 DOWNTO 2 ) <= next_PC;
->>>>>>> 172d992f8b088c653a05e3fb3314e990089d6643
 			END IF;
 	END PROCESS;
 END behavior;
