@@ -26,7 +26,7 @@ END Idecode;
 
 
 ARCHITECTURE behavior OF Idecode IS
-TYPE register_file IS ARRAY ( 0 TO ResSize-1 ) OF STD_LOGIC_VECTOR( ResSize-2 DOWNTO 0 );
+TYPE register_file IS ARRAY ( 0 TO ResSize-1 ) OF STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 
 	SIGNAL register_array				: register_file;
 	SIGNAL write_register_address 		: STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
@@ -46,11 +46,9 @@ BEGIN
    	Instruction_immediate_value <= Instruction( 15 DOWNTO 0 );
 	zeroes<=(OTHERS =>'0');
 					-- Read Register 1 Operation
-	read_data_1 <= register_array( 
-			      CONV_INTEGER( read_register_1_address ) );
+	read_data_1 <= register_array( CONV_INTEGER( read_register_1_address ) );
 					-- Read Register 2 Operation		 
-	read_data_2 <= register_array( 
-			      CONV_INTEGER( read_register_2_address ) );
+	read_data_2 <= register_array( CONV_INTEGER( read_register_2_address ) );
 					-- Mux for Register Write Address
 
    write_register_address <= write_register_address_1 WHEN RegDst = "01"  ELSE 

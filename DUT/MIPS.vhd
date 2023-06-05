@@ -45,7 +45,7 @@ ARCHITECTURE structure OF MIPS IS
         		ALU_result 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
         		RegWrite			: IN 	STD_LOGIC;
 				MemtoReg 			: IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
-        		RegDst 				: IN 	STD_LOGIC;
+        		RegDst 				: IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
         		Sign_extend 		: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 				PC_plus_4   		: IN    STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); --- change if needed
         		clock, reset		: IN 	STD_LOGIC );
@@ -53,7 +53,7 @@ ARCHITECTURE structure OF MIPS IS
 
 	COMPONENT control
 	     PORT( 	Opcode 				: IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
-             	RegDst 				: OUT 	STD_LOGIC;
+             	RegDst 				: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
              	ALUSrc 				: OUT 	STD_LOGIC;
              	MemtoReg 			: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
              	RegWrite 			: OUT 	STD_LOGIC;
@@ -109,7 +109,7 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL ALUSrc 			: STD_LOGIC;
 	SIGNAL Branch 			: STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 	SIGNAL Jump       		: STD_LOGIC_VECTOR( 1 DOWNTO 0 );
-	SIGNAL RegDst 			: STD_LOGIC;
+	SIGNAL RegDst 			: STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 	SIGNAL Regwrite 		: STD_LOGIC;
 	SIGNAL Zero 			: STD_LOGIC;
 	SIGNAL MemWrite 		: STD_LOGIC;

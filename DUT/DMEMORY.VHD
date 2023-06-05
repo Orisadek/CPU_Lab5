@@ -26,7 +26,7 @@ BEGIN
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\asm_ver1\mars_Dmem_hex_intel.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\asm_ver1\dmemory.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (

@@ -11,7 +11,7 @@ ENTITY Ifetch IS
 generic ( ResSize : positive := 32;
 		PC_size : positive := 10;
 		change_size: positive := 8); 
-	PORT(	 Instruction 		: OUT	STD_LOGIC_VECTOR( ResSize DOWNTO 0 );
+	PORT(	 Instruction 		: OUT	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
         	 PC_plus_4_out 	: OUT	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );  --WE CHANGED IT FROM 10 BITS TO 4 BITS!!! and back!
 			 PC_out 			: OUT	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
         	 Add_result 		: IN 	STD_LOGIC_VECTOR( change_size-1 DOWNTO 0 );
@@ -20,7 +20,7 @@ generic ( ResSize : positive := 32;
         	 clock, reset 	: IN 	STD_LOGIC;
 			 data_reg 		: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			 Jump       	: IN   STD_LOGIC_VECTOR( 1 DOWNTO 0 );
-			 JumpAdress		: IN   STD_LOGIC_VECTOR( ResSize DOWNTO 0 )
+			 JumpAdress		: IN   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 )
 			 );
 END Ifetch;
 
@@ -38,7 +38,7 @@ inst_memory: altsyncram
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\asm_ver1\mars_Pmem_hex_intel.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\asm_ver1\program.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (
@@ -52,7 +52,7 @@ inst_memory: altsyncram
 		PC_plus_4_out 	<= PC_plus_4;
 						-- send address to inst. memory address register
 
-		Mem_Addr <= next_PC;
+		Mem_Addr <= PC(PC_size-1 DOWNTO 2 );
 						-- Adder to increment PC by 4        
       	PC_plus_4( PC_size-1 DOWNTO 2 )  <= PC( PC_size-1 DOWNTO 2 ) + 1;
        	PC_plus_4( 1 DOWNTO 0 )  <= "00";
@@ -65,10 +65,10 @@ inst_memory: altsyncram
 					JumpAdress( PC_size-1 DOWNTO 2 ) when Jump = "10" else --jal,j
 					(others=>'0');
 					
-	fetch_proc:process
+	fetch_proc:process(clock)
 		BEGIN
 		--	WAIT UNTIL ( clock'EVENT ) AND ( clock = '1' );
-			IF (reset = '1' and clock'EVENT  AND clock = '1'  )THEN
+			IF (reset = '1')THEN
 				   PC(PC_size-1 DOWNTO 2) <= "00000000" ; 
 			elsif( clock'EVENT  AND clock = '1') then
 				   PC(PC_size-1 DOWNTO 2 ) <= next_PC;

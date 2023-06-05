@@ -21,7 +21,7 @@ ARCHITECTURE struct OF MIPS_tb IS
 
    -- Internal signal declarations
    SIGNAL ALU_result_out  : STD_LOGIC_VECTOR( 31 DOWNTO 0 );
-   SIGNAL Branch_out      : STD_LOGIC;
+   SIGNAL Branch_out      :  STD_LOGIC_VECTOR( 1 DOWNTO 0 );
    SIGNAL Instruction_out : STD_LOGIC_VECTOR( 31 DOWNTO 0 );
    SIGNAL Memwrite_out    : STD_LOGIC;
    SIGNAL PC              : STD_LOGIC_VECTOR( 9 DOWNTO 0 );
@@ -37,19 +37,15 @@ ARCHITECTURE struct OF MIPS_tb IS
    -- Component Declarations
    COMPONENT MIPS
    PORT (
-      clock           : IN     STD_LOGIC;
-      reset           : IN     STD_LOGIC;
-      ALU_result_out  : OUT    STD_LOGIC_VECTOR ( 31 DOWNTO 0 );
-      Branch_out      : OUT    STD_LOGIC;
-      Instruction_out : OUT    STD_LOGIC_VECTOR ( 31 DOWNTO 0 );
-      Memwrite_out    : OUT    STD_LOGIC;
-      PC              : OUT    STD_LOGIC_VECTOR ( 9 DOWNTO 0 );
-	  CLKCNT		  : OUT  STD_LOGIC_VECTOR( clkcnt_size-1 DOWNTO 0 );
-      Regwrite_out    : OUT    STD_LOGIC;
-      Zero_out        : OUT    STD_LOGIC;
-      read_data_1_out : OUT    STD_LOGIC_VECTOR ( 31 DOWNTO 0 );
-      read_data_2_out : OUT    STD_LOGIC_VECTOR ( 31 DOWNTO 0 );
-      write_data_out  : OUT    STD_LOGIC_VECTOR ( 31 DOWNTO 0 )
+      reset, clock					: IN 	STD_LOGIC; 
+		-- Output important signals to pins for easy display in Simulator
+		PC								: OUT  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
+		CLKCNT							: OUT  STD_LOGIC_VECTOR( clkcnt_size-1 DOWNTO 0 );
+		ALU_result_out, read_data_1_out, read_data_2_out, write_data_out,	
+     	Instruction_out					: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+		Branch_out                      : OUT 	STD_LOGIC_VECTOR(1 DOWNTO 0 );
+		Zero_out, Memwrite_out, 
+		Regwrite_out					: OUT 	STD_LOGIC
    );
    END COMPONENT;
    

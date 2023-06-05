@@ -31,7 +31,6 @@ ARCHITECTURE behavior OF control IS
 BEGIN           
 				-- Code to generate control signals using opcode bits
 	R_format 	<=  '1'  WHEN  Opcode = "000000"  ELSE '0';
-
 	I_format    <=  '1'  WHEN  (Opcode = "001000" or Opcode ="001100" or Opcode ="001101" or Opcode ="001010" or Opcode ="001110" or Opcode ="001111") ELSE '0'; --ADDI,ANDI,ORI,SLTI,XORI
 	Lw          <=  '1'  WHEN  Opcode = "100011"  ELSE '0';
  	Sw          <=  '1'  WHEN  Opcode = "101011"  ELSE '0';

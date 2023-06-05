@@ -13,10 +13,11 @@ USE IEEE.STD_LOGIC_ARITH.ALL;
 ENTITY MIPS_tester IS
    PORT( 
       ALU_result_out  : IN     STD_LOGIC_VECTOR ( 31 DOWNTO 0 );
-      Branch_out      : IN     STD_LOGIC;
+      Branch_out      : IN     STD_LOGIC_VECTOR(1 DOWNTO 0 );
       Instruction_out : IN     STD_LOGIC_VECTOR ( 31 DOWNTO 0 );
       Memwrite_out    : IN     STD_LOGIC;
       PC              : IN     STD_LOGIC_VECTOR ( 9 DOWNTO 0 );
+	  CLKCNT          : IN     STD_LOGIC_VECTOR( 15 DOWNTO 0 ); 
       Regwrite_out    : IN     STD_LOGIC;
       Zero_out        : IN     STD_LOGIC;
       read_data_1_out : IN     STD_LOGIC_VECTOR ( 31 DOWNTO 0 );
