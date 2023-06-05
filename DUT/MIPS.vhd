@@ -71,8 +71,6 @@ ARCHITECTURE structure OF MIPS IS
                	Zero 				: OUT	STD_LOGIC;
                	ALU_Result 			: OUT	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
                	Add_Result 			: OUT	STD_LOGIC_VECTOR( change_size-1 DOWNTO 0 );
-				
-
 	END COMPONENT;
 
 
@@ -84,14 +82,15 @@ ARCHITECTURE structure OF MIPS IS
         		Clock,reset			: IN 	STD_LOGIC );
 	END COMPONENT;
 
+
 	COMPONENT jmp_unit IS
 	generic ( ResSize : positive := 32 ); 
-	PORT(	SIGNAL instruction 		: IN	STD_LOGIC_VECTOR( 25 DOWNTO 0 );
-			SIGNAL PC_plus_4_out 	: IN	STD_LOGIC_VECTOR( 3 DOWNTO 0 );
-			SIGNAL JumpAdress		: OUT   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	PORT(	 instruction 	: IN	STD_LOGIC_VECTOR( 25 DOWNTO 0 );
+			 PC_plus_4_out 	: IN	STD_LOGIC_VECTOR( 3 DOWNTO 0 );
+			 JumpAdress		: OUT   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 
 	END COMPONENT;
-					-- declare signals used to connect VHDL components
+				-- declare signals used to connect VHDL components
 	SIGNAL PC_plus_4 		: STD_LOGIC_VECTOR( 9 DOWNTO 0 );
 	SIGNAL read_data_1 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL read_data_2 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
@@ -111,7 +110,6 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL ALUop 			: STD_LOGIC_VECTOR(  AluOpSize-1 DOWNTO 0 );
 	SIGNAL Instruction		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL JumpAdress		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-	
 
 BEGIN
 					-- copy important signals to output pins for easy 
@@ -138,6 +136,7 @@ BEGIN
 				data_reg 	    => read_data_1,
 				Jump            => Jump,
 				JumpAdress		=> JumpAdress);
+
 
    ID : Idecode
    	PORT MAP (	read_data_1 	=> read_data_1,
