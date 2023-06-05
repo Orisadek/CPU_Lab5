@@ -7,13 +7,17 @@ ENTITY MIPS IS
 	generic ( AluOpSize : positive := 7;
 			ResSize : positive := 32;
 			PC_size : positive := 10;
-			change_size: positive := 8); 			); 
+			change_size: positive := 8;
+			Imm_size: positive := 26;
+			clkcnt_size: positive := 16 ); 
 	PORT( reset, clock					: IN 	STD_LOGIC; 
 		-- Output important signals to pins for easy display in Simulator
 		PC								: OUT  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
+		CLKCNT							: OUT  STD_LOGIC_VECTOR( clkcnt_size-1 DOWNTO 0 );
 		ALU_result_out, read_data_1_out, read_data_2_out, write_data_out,	
      	Instruction_out					: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-		Branch_out, Zero_out, Memwrite_out, 
+		Branch_out                      : OUT 	STD_LOGIC_VECTOR(1 DOWNTO 0 );
+		Zero_out, Memwrite_out, 
 		Regwrite_out					: OUT 	STD_LOGIC );
 END 	MIPS;
 
@@ -39,9 +43,11 @@ ARCHITECTURE structure OF MIPS IS
         		Instruction 		: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
         		read_data 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
         		ALU_result 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-        		RegWrite, MemtoReg 	: IN 	STD_LOGIC;
+        		RegWrite			: IN 	STD_LOGIC;
+				MemtoReg 			: IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
         		RegDst 				: IN 	STD_LOGIC;
         		Sign_extend 		: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+				PC_plus_4   		: IN    STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); --- change if needed
         		clock, reset		: IN 	STD_LOGIC );
 	END COMPONENT;
 
@@ -49,11 +55,11 @@ ARCHITECTURE structure OF MIPS IS
 	     PORT( 	Opcode 				: IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
              	RegDst 				: OUT 	STD_LOGIC;
              	ALUSrc 				: OUT 	STD_LOGIC;
-             	MemtoReg 			: OUT 	STD_LOGIC;
+             	MemtoReg 			: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
              	RegWrite 			: OUT 	STD_LOGIC;
              	MemRead 			: OUT 	STD_LOGIC;
              	MemWrite 			: OUT 	STD_LOGIC;
-             	Branch 				: OUT 	STD_LOGIC;
+             	Branch 				: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 				Jump       			: OUT   STD_LOGIC_VECTOR( 1 DOWNTO 0 );
              	ALUop 				: OUT 	STD_LOGIC_VECTOR( AluOpSize-1 DOWNTO 0 );
              	clock, reset		: IN 	STD_LOGIC );
@@ -67,10 +73,11 @@ ARCHITECTURE structure OF MIPS IS
                	ALUOp 				: IN 	STD_LOGIC_VECTOR( AluOpSize-1 DOWNTO 0 );
                	ALUSrc 				: IN 	STD_LOGIC;
 				PC_plus_4 			: IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
-               	clock, reset		: IN 	STD_LOGIC );
+               	clock, reset		: IN 	STD_LOGIC;
                	Zero 				: OUT	STD_LOGIC;
                	ALU_Result 			: OUT	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-               	Add_Result 			: OUT	STD_LOGIC_VECTOR( change_size-1 DOWNTO 0 );
+               	Add_Result 			: OUT	STD_LOGIC_VECTOR( change_size-1 DOWNTO 0 )
+				);
 	END COMPONENT;
 
 
@@ -87,11 +94,12 @@ ARCHITECTURE structure OF MIPS IS
 	generic ( ResSize : positive := 32 ); 
 	PORT(	 instruction 	: IN	STD_LOGIC_VECTOR( 25 DOWNTO 0 );
 			 PC_plus_4_out 	: IN	STD_LOGIC_VECTOR( 3 DOWNTO 0 );
-			 JumpAdress		: OUT   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			 JumpAdress		: OUT   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 )
+			 );
 
 	END COMPONENT;
 				-- declare signals used to connect VHDL components
-	SIGNAL PC_plus_4 		: STD_LOGIC_VECTOR( 9 DOWNTO 0 );
+	SIGNAL PC_plus_4 		: STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 	SIGNAL read_data_1 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL read_data_2 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL Sign_Extend 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
@@ -100,7 +108,7 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL read_data 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL ALUSrc 			: STD_LOGIC;
 	SIGNAL Branch 			: STD_LOGIC_VECTOR( 1 DOWNTO 0 );
-	SIGNAL Jump       		:STD_LOGIC;
+	SIGNAL Jump       		: STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 	SIGNAL RegDst 			: STD_LOGIC;
 	SIGNAL Regwrite 		: STD_LOGIC;
 	SIGNAL Zero 			: STD_LOGIC;
@@ -110,15 +118,22 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL ALUop 			: STD_LOGIC_VECTOR(  AluOpSize-1 DOWNTO 0 );
 	SIGNAL Instruction		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL JumpAdress		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	SIGNAL zeroes				: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 
 BEGIN
 					-- copy important signals to output pins for easy 
 					-- display in Simulator
+   zeroes<=(OTHERS =>'0');
    Instruction_out 	<= Instruction;
    ALU_result_out 	<= ALU_result;
    read_data_1_out 	<= read_data_1;
    read_data_2_out 	<= read_data_2;
-   write_data_out  	<= read_data WHEN MemtoReg = '1' ELSE ALU_result;
+
+   write_data_out <= ALU_result WHEN ( MemtoReg = "00" ) ELSE 
+				  read_data WHEN ( MemtoReg = "01" ) ELSE  
+				  zeroes(ResSize-1 downto PC_size )&PC_plus_4 WHEN ( MemtoReg = "10" ) ELSE   ---CONV_STD_LOGIC_VECTOR( 31, 32 )
+				  (others=>'0');
+				  
    Branch_out 		<= Branch;
    Zero_out 		<= Zero;
    RegWrite_out 	<= RegWrite;
@@ -148,6 +163,7 @@ BEGIN
 				MemtoReg 		=> MemtoReg,
 				RegDst 			=> RegDst,
 				Sign_extend 	=> Sign_extend,
+				PC_plus_4       => PC_plus_4,
         		clock 			=> clock,  
 				reset 			=> reset );
 
@@ -194,8 +210,20 @@ BEGIN
 			instruction 	=> Instruction( 25 DOWNTO 0 ),
 			PC_plus_4_out   => PC_plus_4(3 DOWNTO 0 ),
 			JumpAdress		=>JumpAdress
+			);
 
-	END COMPONENT;
+	
+
+clkcnt_proc:PROCESS(clock)
+	variable clkcnt_temp:integer;
+		BEGIN
+			if(reset='1') then
+			clkcnt_temp:= 0;
+			elsif( (clock'EVENT ) AND ( clock = '1' ))then
+			clkcnt_temp:=clkcnt_temp+1;
+			CLKCNT<= CONV_STD_LOGIC_VECTOR( clkcnt_temp, clkcnt_size ) ;
+			end if;
+	END PROCESS;
 
 END structure;
 

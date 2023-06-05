@@ -38,7 +38,7 @@ inst_memory: altsyncram
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\TestPrograms\ModelSim\L1_Cache\asm_ver1\program.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\asm_ver1\mars_Pmem_hex_intel.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (
@@ -54,7 +54,7 @@ inst_memory: altsyncram
 
 		Mem_Addr <= next_PC;
 						-- Adder to increment PC by 4        
-      	PC_plus_4( PC_size-1 DOWNTO 2 )  <= PC( 9 DOWNTO 2 ) + 1;
+      	PC_plus_4( PC_size-1 DOWNTO 2 )  <= PC( PC_size-1 DOWNTO 2 ) + 1;
        	PC_plus_4( 1 DOWNTO 0 )  <= "00";
 						-- Mux to select Branch Address or PC + 4        
 		MUXres  <= X"00" WHEN Reset = '1' ELSE
@@ -62,17 +62,18 @@ inst_memory: altsyncram
 			ELSE   PC_plus_4( PC_size-1 DOWNTO 2 );
 		next_PC <= MUXres when Jump = "00" else 
 					data_reg(PC_size-1 DOWNTO 2 ) when Jump = "01" else --jr
-					JumpAdress( PC_size-1 DOWNTO 2 ) when Jump = "10" --jal,j
-	PROCESS
+					JumpAdress( PC_size-1 DOWNTO 2 ) when Jump = "10" else --jal,j
+					(others=>'0');
+					
+	fetch_proc:process
 		BEGIN
-			WAIT UNTIL ( clock'EVENT ) AND ( clock = '1' );
-			IF reset = '1' THEN
-
+		--	WAIT UNTIL ( clock'EVENT ) AND ( clock = '1' );
+			IF (reset = '1' and clock'EVENT  AND clock = '1'  )THEN
 				   PC(PC_size-1 DOWNTO 2) <= "00000000" ; 
-			ELSE 
+			elsif( clock'EVENT  AND clock = '1') then
 				   PC(PC_size-1 DOWNTO 2 ) <= next_PC;
 			END IF;
-	END PROCESS;
+	END process;
 END behavior;
 
 
