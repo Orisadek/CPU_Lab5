@@ -6,11 +6,16 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_SIGNED.ALL;
+LIBRARY work;
+USE work.aux_package.all;
+
 
 ENTITY  Execute IS
 
 generic ( AluOpSize : positive := 7;
+		add_res_size : positive := 8;
 		shamt_size: positive := 5;
+		func_op_size: positive := 6;
 		ResSize : positive := 32;
 		PC_size : positive := 10;
 		change_size: positive := 8;
@@ -20,25 +25,24 @@ generic ( AluOpSize : positive := 7;
 			Read_data_2 	: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Sign_extend 	: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			shamt 			: IN 	STD_LOGIC_VECTOR( shamt_size-1 DOWNTO 0 );
-			Function_opcode : IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
+			Function_opcode : IN 	STD_LOGIC_VECTOR( func_op_size-1 DOWNTO 0 );
 			ALUOp 			: IN 	STD_LOGIC_VECTOR( AluOpSize-1 DOWNTO 0 );
 			ALUSrc 			: IN 	STD_LOGIC;
 			Zero 			: OUT	STD_LOGIC;
 			ALU_Result 		: OUT	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-			Add_Result 		: OUT	STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-			PC_plus_4 		: IN 	STD_LOGIC_VECTOR( 9 DOWNTO 0 );
+			Add_Result 		: OUT	STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
+			PC_plus_4 		: IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 			clock, reset	: IN 	STD_LOGIC );
 END Execute;
 
 ARCHITECTURE behavior OF Execute IS
 SIGNAL Ainput, Binput 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 SIGNAL ALU_output_mux		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
---SIGNAL ALU_mult		: STD_LOGIC_VECTOR( mult_size-1 DOWNTO 0 );
-SIGNAL Branch_Add 			: STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+SIGNAL Branch_Add 			: STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
 SIGNAL ALU_ctl				: STD_LOGIC_VECTOR( 3 DOWNTO 0 );
 SIGNAL zeroes				: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 SIGNAL shamt_int           : integer;
---SIGNAL Alu_tmp 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+
 
 BEGIN
 	Ainput <= Read_data_1;
@@ -68,8 +72,8 @@ BEGIN
 		    
 				
 						-- Adder to compute Branch Address
-	Branch_Add	<= PC_plus_4( 9 DOWNTO 2 ) +  Sign_extend( 7 DOWNTO 0 ) ;
-	Add_result 	<= Branch_Add( 7 DOWNTO 0 );
+	Branch_Add	<= PC_plus_4( PC_size-1 DOWNTO 2 ) +  Sign_extend( change_size-1 DOWNTO 0 ) ;
+	Add_result 	<= Branch_Add( change_size-1 DOWNTO 0 );
 		
 	Zero <= '1' when ALU_output_mux= zeroes else '0';
 
@@ -98,12 +102,12 @@ PROCESS ( ALU_ctl, Ainput, Binput )
 						-- ALU performs SLT
   	 	WHEN "0111" 	=>
 			alu_tmp:=Ainput - Binput;
-			ALU_output_mux <= zeroes(ResSize-2 DOWNTO 0)&alu_tmp(ResSize-1);
+			ALU_output_mux <= X"0000000"&B"000"&alu_tmp(ResSize-1);
 		WHEN "1000"    => 
 				alu_mult :=Ainput * Binput ; -- mult
 				ALU_output_mux <= alu_mult(ResSize-1 DOWNTO 0);
 		
-		WHEN "1001" => ALU_output_mux <= Binput(15 DOWNTO 0)&zeroes(ResSize-1 downto 16);
+		WHEN "1001" => ALU_output_mux <= Binput(15 DOWNTO 0)&X"0000";
 		
  	 	WHEN OTHERS	=>	ALU_output_mux 	<= X"00000000" ;
   	END CASE;

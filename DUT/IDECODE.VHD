@@ -3,6 +3,9 @@ LIBRARY IEEE; 			-- the MIPS computer)
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+LIBRARY work;
+USE work.aux_package.all;
+
 
 ENTITY Idecode IS
 generic ( AluOpSize : positive := 7;
@@ -66,10 +69,10 @@ BEGIN
 					-- Mux to bypass data memory for Rformat instructions
 	write_data <= ALU_result( ResSize-1 DOWNTO 0 ) WHEN ( MemtoReg = "00" ) ELSE 
 				  read_data WHEN ( MemtoReg = "01" ) ELSE  
-				  zeroes(ResSize-1 downto PC_size )&PC_plus_4 WHEN ( MemtoReg = "10" ) ELSE   ---CONV_STD_LOGIC_VECTOR( 31, 32 )
+				  zeroes(ResSize-1 downto PC_size )&PC_plus_4 WHEN ( MemtoReg = "10" ) ELSE   
 				  (others=>'0');
 					-- Sign Extend 16-bits to 32-bits
-		
+		--- sign extention
     	Sign_extend <= X"0000" & Instruction_immediate_value_I WHEN (Instruction_immediate_value_I(Imm_val_I-1) = '0' 
 		and J = '0') ELSE
 		X"FFFF" & Instruction_immediate_value_I when (Instruction_immediate_value_I(Imm_val_I-1) = '1' 

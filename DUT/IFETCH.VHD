@@ -4,6 +4,10 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+LIBRARY work;
+USE work.aux_package.all;
+
+
 LIBRARY altera_mf;
 USE altera_mf.altera_mf_components.all;
 

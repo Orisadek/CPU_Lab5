@@ -4,6 +4,9 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+LIBRARY work;
+USE work.aux_package.all;
+
 LIBRARY altera_mf;
 USE altera_mf.altera_mf_components.all;
 
@@ -17,10 +20,7 @@ END jmp_unit;
 
 ARCHITECTURE JumpUnitA OF jmp_unit IS
 	SIGNAL inst_shftd 	 : STD_LOGIC_VECTOR( Imm_size+1 DOWNTO 0 );
-	
-	
 BEGIN
-
 	inst_shftd <= instruction &"00";
 	JumpAdress <= PC_plus_4_out & inst_shftd;
 	

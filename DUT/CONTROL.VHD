@@ -3,6 +3,9 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_SIGNED.ALL;
+LIBRARY work;
+USE work.aux_package.all;
+
 
 ENTITY control IS
 
@@ -25,10 +28,7 @@ generic ( AluOpSize : positive := 7 ;
 END control;
 
 ARCHITECTURE behavior OF control IS
-
-
-	SIGNAL  R_format, Lw, Sw, Beq,Bne,jmp,jr,jal, I_format,Addi,Ori,Andi,Xori,Slti: STD_LOGIC;
-
+	SIGNAL  R_format, Lw, Sw, Beq,Bne,jmp,jr,jal,I_format,Addi,Ori,Andi,Xori,Slti: STD_LOGIC;
 
 BEGIN           
 				-- Code to generate control signals using opcode bits

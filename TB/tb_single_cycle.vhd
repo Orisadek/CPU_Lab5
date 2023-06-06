@@ -1,3 +1,8 @@
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+LIBRARY work;
+USE work.aux_package.all;
 
 ENTITY MIPS_tb IS
 -- Declarations
@@ -9,11 +14,7 @@ generic ( AluOpSize : positive := 7;
 			clkcnt_size: positive := 16 ); 
 END MIPS_tb ;
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
 
-LIBRARY work;
 
 ARCHITECTURE struct OF MIPS_tb IS
 
