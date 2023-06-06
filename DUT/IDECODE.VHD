@@ -9,7 +9,9 @@ generic ( AluOpSize : positive := 7;
 		ResSize : positive := 32;
 		PC_size : positive := 10;
 		change_size: positive := 8;
-		cmd_size: positive := 5
+		cmd_size: positive := 5;
+		Imm_val_I: positive  :=16;
+		Imm_val_J: positive  :=26
 			);
 	  PORT(	read_data_1	: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			read_data_2	: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
@@ -35,15 +37,21 @@ TYPE register_file IS ARRAY ( 0 TO ResSize-1 ) OF STD_LOGIC_VECTOR( ResSize-1 DO
 	SIGNAL read_register_2_address		: STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 	SIGNAL write_register_address_1		: STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 	SIGNAL write_register_address_0		: STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
-	SIGNAL Instruction_immediate_value	: STD_LOGIC_VECTOR( 15 DOWNTO 0 );
+	SIGNAL Instruction_immediate_value_I	: STD_LOGIC_VECTOR( Imm_val_I-1 DOWNTO 0 );
+	SIGNAL Instruction_immediate_value_J	: STD_LOGIC_VECTOR( Imm_val_J-1 DOWNTO 0 );
 	SIGNAL zeroes				: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-
+	SIGNAL J				: STD_LOGIC;
+	
 BEGIN
 	read_register_1_address 	<= Instruction( 25 DOWNTO 21 );
    	read_register_2_address 	<= Instruction( 20 DOWNTO 16 );
    	write_register_address_1	<= Instruction( 15 DOWNTO 11 );
    	write_register_address_0 	<= Instruction( 20 DOWNTO 16 );
-   	Instruction_immediate_value <= Instruction( 15 DOWNTO 0 );
+	
+   	Instruction_immediate_value_I <= Instruction( Imm_val_I-1 DOWNTO 0 );
+	Instruction_immediate_value_J<=Instruction( Imm_val_J-1 DOWNTO 0 );
+	J <= '1' when (Instruction(ResSize-1 downto 26) = "000010" or Instruction(ResSize-1 downto 26) = "000011") ELSE
+	'0'; --- jmp or jal
 	zeroes<=(OTHERS =>'0');
 					-- Read Register 1 Operation
 	read_data_1 <= register_array( CONV_INTEGER( read_register_1_address ) );
@@ -61,9 +69,15 @@ BEGIN
 				  zeroes(ResSize-1 downto PC_size )&PC_plus_4 WHEN ( MemtoReg = "10" ) ELSE   ---CONV_STD_LOGIC_VECTOR( 31, 32 )
 				  (others=>'0');
 					-- Sign Extend 16-bits to 32-bits
-    	Sign_extend <= X"0000" & Instruction_immediate_value
-		WHEN Instruction_immediate_value(15) = '0'
-		ELSE	X"FFFF" & Instruction_immediate_value;
+		
+    	Sign_extend <= X"0000" & Instruction_immediate_value_I WHEN (Instruction_immediate_value_I(Imm_val_I-1) = '0' 
+		and J = '0') ELSE
+		X"FFFF" & Instruction_immediate_value_I when (Instruction_immediate_value_I(Imm_val_I-1) = '1' 
+		and J = '0') ELSE
+		B"000000" & Instruction_immediate_value_J WHEN (Instruction_immediate_value_J(Imm_val_J-1) = '0' 
+		and J = '1') ELSE
+		B"111111" & Instruction_immediate_value_J when (Instruction_immediate_value_J(Imm_val_J-1) = '1' 
+		and J = '1');
 
 PROCESS
 	BEGIN
@@ -77,7 +91,7 @@ PROCESS
  			END LOOP;
 					-- Write back to register - don't write to register 0
   		ELSIF RegWrite = '1' AND write_register_address /= 0 THEN
-		      register_array( CONV_INTEGER( write_register_address)) <= write_data;
+		      register_array(CONV_INTEGER(write_register_address)) <= write_data;
 		END IF;
 	END PROCESS;
 END behavior;

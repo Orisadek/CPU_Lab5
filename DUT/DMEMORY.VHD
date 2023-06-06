@@ -9,9 +9,13 @@ LIBRARY altera_mf;
 USE altera_mf.altera_mf_components.all;
 
 ENTITY dmemory IS
-	PORT(	read_data 			: OUT 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
-        	address 			: IN 	STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-        	write_data 			: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
+	generic ( AluOpSize : positive := 7;
+		ResSize : positive := 32;
+		address_size: positive := 8
+		); 
+	PORT(	read_data 			: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+        	address 			: IN 	STD_LOGIC_VECTOR( address_size-1 DOWNTO 0 );
+        	write_data 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	   		MemRead, Memwrite 	: IN 	STD_LOGIC;
             clock,reset			: IN 	STD_LOGIC );
 END dmemory;
@@ -26,7 +30,7 @@ BEGIN
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\asm_ver1\dmemory.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\testing\test3_data.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (

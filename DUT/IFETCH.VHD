@@ -38,7 +38,7 @@ inst_memory: altsyncram
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\asm_ver1\program.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\testing\test3_prog.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (
@@ -52,7 +52,7 @@ inst_memory: altsyncram
 		PC_plus_4_out 	<= PC_plus_4;
 						-- send address to inst. memory address register
 
-		Mem_Addr <= PC(PC_size-1 DOWNTO 2 );
+		Mem_Addr <= next_PC;
 						-- Adder to increment PC by 4        
       	PC_plus_4( PC_size-1 DOWNTO 2 )  <= PC( PC_size-1 DOWNTO 2 ) + 1;
        	PC_plus_4( 1 DOWNTO 0 )  <= "00";
@@ -61,8 +61,8 @@ inst_memory: altsyncram
 			Add_result  WHEN ( (( Branch(0) = '1' ) AND ( Zero = '1' )) or(( Branch(1) = '1' ) AND ( Zero = '0' )) )
 			ELSE   PC_plus_4( PC_size-1 DOWNTO 2 );
 		next_PC <= MUXres when Jump = "00" else 
-					data_reg(PC_size-1 DOWNTO 2 ) when Jump = "01" else --jr
-					JumpAdress( PC_size-1 DOWNTO 2 ) when Jump = "10" else --jal,j
+				   data_reg(PC_size-1 DOWNTO 2 ) when Jump = "01" else --jr 
+				   JumpAdress( PC_size-1 DOWNTO 2 ) when (Jump = "10" or Jump = "11") else --jal,j
 					(others=>'0');
 					
 	fetch_proc:process(clock)

@@ -10,6 +10,7 @@ USE IEEE.STD_LOGIC_SIGNED.ALL;
 ENTITY  Execute IS
 
 generic ( AluOpSize : positive := 7;
+		shamt_size: positive := 5;
 		ResSize : positive := 32;
 		PC_size : positive := 10;
 		change_size: positive := 8;
@@ -18,6 +19,7 @@ generic ( AluOpSize : positive := 7;
 	PORT(	Read_data_1 	: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Read_data_2 	: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Sign_extend 	: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			shamt 			: IN 	STD_LOGIC_VECTOR( shamt_size-1 DOWNTO 0 );
 			Function_opcode : IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
 			ALUOp 			: IN 	STD_LOGIC_VECTOR( AluOpSize-1 DOWNTO 0 );
 			ALUSrc 			: IN 	STD_LOGIC;
@@ -31,35 +33,34 @@ END Execute;
 ARCHITECTURE behavior OF Execute IS
 SIGNAL Ainput, Binput 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 SIGNAL ALU_output_mux		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-SIGNAL ALU_mult		: STD_LOGIC_VECTOR( mult_size-1 DOWNTO 0 );
+--SIGNAL ALU_mult		: STD_LOGIC_VECTOR( mult_size-1 DOWNTO 0 );
 SIGNAL Branch_Add 			: STD_LOGIC_VECTOR( 7 DOWNTO 0 );
 SIGNAL ALU_ctl				: STD_LOGIC_VECTOR( 3 DOWNTO 0 );
 SIGNAL zeroes				: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-SIGNAL Binput_int           : integer;
-SIGNAL Alu_tmp 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+SIGNAL shamt_int           : integer;
+--SIGNAL Alu_tmp 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 
 BEGIN
 	Ainput <= Read_data_1;
 	zeroes<=(OTHERS =>'0');
 
 						-- ALU input mux
-	Binput <= Read_data_2 WHEN ( ALUSrc = '0' and not( Function_opcode = "000000" or Function_opcode = "000010" )) 
-  		else  Sign_extend( ResSize-1 DOWNTO 0 );
-					---- add mult
+	Binput <= Read_data_2 WHEN (ALUSrc = '0' or ALUOp(0) = '1') 
+		else  Sign_extend;
 					
-	Binput_int<= CONV_INTEGER(Binput) WHEN ( ALUSrc = '0' and not( Function_opcode = "000000" or Function_opcode = "000010" )) 
-  		else  0;
 					
-	ALU_ctl <= "0000" when (Function_opcode = "100100" or ALUOp(4)='1' )  else --AND
-			   "0001" when (Function_opcode = "100101" or ALUOp(3)='1') else --OR
-			   "0010" when (Function_opcode = "100000" or ALUOp(2) = '1') else --ADD
-			   "0011" when (Function_opcode = "100110" or ALUOp(5) = '1')else --XOR
-			   "0100" when (Function_opcode = "000000" ) else --SHL
-			   "0101" when (Function_opcode = "000010" ) else --SHR
-			   "0110" when (Function_opcode = "100010" ) else --SUB
-			   "0111" when (Function_opcode = "101010" or ALUOp(6) ='1' ) else  --SLT
-			   "1000" when (Function_opcode = "011000" ) else -- MULT
-			   "1001" when (Function_opcode = "001111") else -- LUI
+	shamt_int<= CONV_INTEGER(shamt);
+					
+	ALU_ctl <= "0000" when ((Function_opcode = "100100" and ALUOp(1) = '1') or ALUOp(4)='1')  else --AND,ANDI
+			   "0001" when ((Function_opcode = "100101" and ALUOp(1) = '1') or ALUOp(3)='1') else --OR,ORI
+			   "0010" when ((Function_opcode = "100000" and ALUOp(1) = '1') or ALUOp(2) = '1') else --ADD ,Addi , Sw,Lw
+			   "0011" when ((Function_opcode = "100110" and ALUOp(1) = '1') or ALUOp(5) = '1')else --XOR,XORI
+			   "0100" when (Function_opcode  = "000000" and ALUOp(1) = '1') else --SHL
+			   "0101" when (Function_opcode  = "000010" and ALUOp(1) = '1') else --SHR
+			   "0110" when ((Function_opcode = "100010" and ALUOp(1) = '1') or ALUOp(0) = '1') else --SUB,Beq,Bne
+			   "0111" when ((Function_opcode = "101010" and ALUOp(1) = '1') or ALUOp(6) = '1') else  --SLT,SLTi
+			   "1000" when (Function_opcode  = "011000" and ALUOp(1) = '1') else -- MULT
+			   "1001" when (Function_opcode  = "001111" and ALUOp(1) = '1') else -- LUI
 			   "1111"; 
 			   
 	
@@ -67,16 +68,19 @@ BEGIN
 				
 						-- Adder to compute Branch Address
 	Branch_Add	<= PC_plus_4( 9 DOWNTO 2 ) +  Sign_extend( 7 DOWNTO 0 ) ;
-		Add_result 	<= Branch_Add( 7 DOWNTO 0 );
+	Add_result 	<= Branch_Add( 7 DOWNTO 0 );
 		
 	Zero <= '1' when ALU_output_mux= zeroes else '0';
 
 PROCESS ( ALU_ctl, Ainput, Binput )
+	variable alu_tmp : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	variable alu_mult : STD_LOGIC_VECTOR( mult_size-1 DOWNTO 0 );
 	BEGIN
+	
+	
 					-- Select ALU operation
  	CASE ALU_ctl IS
 						-- ALU performs ALUresult = A_input AND B_input
-
 		WHEN "0000" 	=>	ALU_output_mux 	<= Ainput AND Binput; 
 						-- ALU performs ALUresult = A_input OR B_input
      	WHEN "0001" 	=>	ALU_output_mux 	<= Ainput OR Binput;
@@ -85,27 +89,25 @@ PROCESS ( ALU_ctl, Ainput, Binput )
 						-- ALU performs ALUresult = A_input XOR B_input 
  	 	WHEN "0011" 	=>	ALU_output_mux <= Ainput xor Binput;
 						-- ALU performs ALUresult = AINPUT shifted *LEFT* by immdediate value (Binput)
- 	 	WHEN "0100" 	=>	ALU_output_mux 	<= Ainput(ResSize-1-Binput_int DOWNTO 0 )& zeroes(Binput_int-1 DOWNTO 0);
+ 	 	WHEN "0100" 	=>ALU_output_mux 	<= Binput(ResSize-1-shamt_int DOWNTO 0 )& zeroes(shamt_int-1 DOWNTO 0);
 						-- ALU performs ALUresult = AINPUT shifted *RIGHT* by immdediate value(Binput)
- 	 	WHEN "0101" 	=>	ALU_output_mux 	<= zeroes(Binput_int-1 DOWNTO 0) & Ainput(ResSize-1 downto Binput_int);
+ 	 	WHEN "0101" 	=>ALU_output_mux 	<= zeroes(shamt_int-1 DOWNTO 0) & Binput(ResSize-1 downto shamt_int);
 						-- ALU performs ALUresult = A_input -B_input
  	 	WHEN "0110" 	=>	ALU_output_mux 	<= Ainput - Binput;
 						-- ALU performs SLT
   	 	WHEN "0111" 	=>
-			Alu_tmp 	<= Ainput - Binput;
-			ALU_output_mux <= zeroes(ResSize-2 DOWNTO 0)  & Alu_tmp(ResSize-1);
-		
+			alu_tmp:=Ainput - Binput;
+			ALU_output_mux <= zeroes(ResSize-2 DOWNTO 0)&alu_tmp(ResSize-1);
 		WHEN "1000"    => 
-				ALU_mult 	<= Ainput * Binput ; -- mult
-				ALU_output_mux <= ALU_mult(ResSize-1 DOWNTO 0);
+				alu_mult :=Ainput * Binput ; -- mult
+				ALU_output_mux <= alu_mult(ResSize-1 DOWNTO 0);
 		
-		WHEN "1001"    => ALU_output_mux <= Binput(15 DOWNTO 0)&zeroes(ResSize-1 downto 16);
+		WHEN "1001" => ALU_output_mux <= Binput(15 DOWNTO 0)&zeroes(ResSize-1 downto 16);
 		
  	 	WHEN OTHERS	=>	ALU_output_mux 	<= X"00000000" ;
   	END CASE;
-	
 			-- Select ALU output        
-	ALU_result <= ALU_output_mux;
   END PROCESS;
+  ALU_result <= ALU_output_mux;
 END behavior;
 

@@ -6,6 +6,7 @@ USE IEEE.STD_LOGIC_ARITH.ALL;
 ENTITY MIPS IS
 	generic ( AluOpSize : positive := 7;
 			ResSize : positive := 32;
+			shamt_size: positive := 5;
 			PC_size : positive := 10;
 			change_size: positive := 8;
 			Imm_size: positive := 26;
@@ -53,6 +54,7 @@ ARCHITECTURE structure OF MIPS IS
 
 	COMPONENT control
 	     PORT( 	Opcode 				: IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
+				func_op     	    : IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
              	RegDst 				: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
              	ALUSrc 				: OUT 	STD_LOGIC;
              	MemtoReg 			: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
@@ -69,6 +71,7 @@ ARCHITECTURE structure OF MIPS IS
    	     PORT(	Read_data_1 		: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
                 Read_data_2 		: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
                	Sign_Extend 		: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+				shamt 			    : IN 	STD_LOGIC_VECTOR( shamt_size-1 DOWNTO 0 );
                	Function_opcode		: IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
                	ALUOp 				: IN 	STD_LOGIC_VECTOR( AluOpSize-1 DOWNTO 0 );
                	ALUSrc 				: IN 	STD_LOGIC;
@@ -119,6 +122,7 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL Instruction		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL JumpAdress		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL zeroes				: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	
 
 BEGIN
 					-- copy important signals to output pins for easy 
@@ -170,6 +174,7 @@ BEGIN
 
    CTL:   control
 	PORT MAP ( 	Opcode 			=> Instruction( 31 DOWNTO 26 ),
+				func_op     	=> Instruction( 5 DOWNTO 0 ),
 				RegDst 			=> RegDst,
 				ALUSrc 			=> ALUSrc,
 				MemtoReg 		=> MemtoReg,
@@ -186,6 +191,7 @@ BEGIN
    	PORT MAP (	Read_data_1 	=> read_data_1,
              	Read_data_2 	=> read_data_2,
 				Sign_extend 	=> Sign_extend,
+				shamt 			=> Instruction( 10 DOWNTO 6 ),
                 Function_opcode	=> Instruction( 5 DOWNTO 0 ),
 				ALUOp 			=> ALUop,
 				ALUSrc 			=> ALUSrc,

@@ -6,9 +6,11 @@ USE IEEE.STD_LOGIC_SIGNED.ALL;
 
 ENTITY control IS
 
-generic ( AluOpSize : positive := 7 ); 
+generic ( AluOpSize : positive := 7 ;
+		  cmd_size    : positive := 6 ); 
    PORT( 	
-	Opcode 		: IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
+	Opcode 		: IN 	STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
+	func_op 	: IN 	STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 	RegDst 		: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 	ALUSrc 		: OUT 	STD_LOGIC;
 	MemtoReg 	: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
@@ -37,14 +39,18 @@ BEGIN
    	Beq         <=  '1'  WHEN  Opcode = "000100"  ELSE '0';
 	Bne         <=  '1'  WHEN  Opcode = "000101"  ELSE '0';
   	RegDst    	<=  "01" when R_format='1' else "10" when jal ='1' ELSE "00";
+	jmp			<=  '1'  WHEN  Opcode = "000010"  ELSE '0'; -- jmp
+	jr			<=  '1'  WHEN  (R_format='1' and func_op = "001000") ELSE '0'; --jr
+	jal			<=  '1'  WHEN  Opcode = "000011"  ELSE '0'; --jal
  	ALUSrc  	<=  Lw OR Sw OR I_format;
 	MemtoReg 	<=  "01" when Lw='1' else "10"  when jal = '1' else "00";
-  	RegWrite 	<=  R_format OR Lw;
+  	RegWrite 	<=  R_format OR Lw OR I_format;
   	MemRead 	<=  Lw;
    	MemWrite 	<=  Sw; 
  	Branch(0)   <=  Beq;
 	Branch(1)   <=  Bne;
-	Jump		<=  "11" when jmp = '1' ELSE "10" when jal = '1' ELSE "01" when jr = '1' else "00";
+	
+	Jump		<=  "11" when jmp = '1' ELSE "10" when jal = '1' ELSE "01" when jr = '1' else "00"; 
 	Addi<= '1'  WHEN  (Opcode = "001000") ELSE '0';
 	Ori <= '1'  WHEN  (Opcode ="001101") ELSE '0';
 	Andi<= '1'  WHEN  (Opcode = "001100") ELSE '0';
@@ -54,9 +60,9 @@ BEGIN
 	ALUOp(5)<=Xori;
 	ALUOp(4)<=Andi;
 	ALUOp(3)<=Ori;
-	ALUOp(2)<=Addi;
-	ALUOp( 1 ) 	<=  R_format;
-	ALUOp( 0 ) 	<=  Beq; 
+	ALUOp(2)<=Addi or Lw or Sw;
+	ALUOp(1) <=R_format;
+	ALUOp(0) <= Beq or Bne; 
 
    END behavior;
 
