@@ -38,7 +38,7 @@ inst_memory: altsyncram
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\testing\test3_prog.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\testing\test2_prog.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (
@@ -63,7 +63,7 @@ inst_memory: altsyncram
 		next_PC <= MUXres when Jump = "00" else 
 				   data_reg(PC_size-1 DOWNTO 2 ) when Jump = "01" else --jr 
 				   JumpAdress( PC_size-1 DOWNTO 2 ) when (Jump = "10" or Jump = "11") else --jal,j
-					(others=>'0');
+				   (others=>'0');
 					
 	fetch_proc:process(clock)
 		BEGIN

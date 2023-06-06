@@ -44,7 +44,7 @@ BEGIN
 	jal			<=  '1'  WHEN  Opcode = "000011"  ELSE '0'; --jal
  	ALUSrc  	<=  Lw OR Sw OR I_format;
 	MemtoReg 	<=  "01" when Lw='1' else "10"  when jal = '1' else "00";
-  	RegWrite 	<=  R_format OR Lw OR I_format;
+  	RegWrite 	<=  R_format OR Lw OR I_format or jal;
   	MemRead 	<=  Lw;
    	MemWrite 	<=  Sw; 
  	Branch(0)   <=  Beq;
