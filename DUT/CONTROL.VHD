@@ -43,7 +43,7 @@ BEGIN
 	jmp			<=  '1'  WHEN  Opcode = "000010"  ELSE '0'; -- jmp
 	jr			<=  '1'  WHEN  (R_format='1' and func_op = "001000") ELSE '0'; --jr
 	jal			<=  '1'  WHEN  Opcode = "000011"  ELSE '0'; --jal
-	Jump		<=  "11" when jmp = '1' ELSE "10" when jal = '1' ELSE "01" when jr = '1' else "00"; 
+	PCSrc		<=  "11" when (jmp = '1' or jal = '1')  ELSE "01" when jr = '1' else "00"; 
 	Addi<= '1'  WHEN  (Opcode = "001000") ELSE '0';
 	Ori <= '1'  WHEN  (Opcode ="001101") ELSE '0';
 	Andi<= '1'  WHEN  (Opcode = "001100") ELSE '0';

@@ -12,27 +12,41 @@ USE work.aux_package.all;
 
 ENTITY  Execute IS
 --									*********Constants Delclaration**********
-generic ( AluOpSize : positive := 9;
-		add_res_size : positive := 8;
-		shamt_size: positive := 5;
-		func_op_size: positive := 6;
-		ResSize : positive := 32;
-		PC_size : positive := 10;
-		change_size: positive := 8;
-		mult_size: positive := 64	); 
+generic ( AluOpSize 	: positive := 9;
+		  add_res_size  : positive := 8;
+		  shamt_size	: positive := 5;
+		  cmd_size		: positive := 5;
+		  func_op_size	: positive := 6;
+		  ResSize		: positive := 32;
+		  PC_size    	: positive := 10;
+		  change_size	: positive := 8;
+		  mult_size	 	: positive := 64	); 
 
-	PORT(	Read_data_1 	: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-			Read_data_2 	: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-			Sign_extend 	: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-			shamt 			: IN 	STD_LOGIC_VECTOR( shamt_size-1 DOWNTO 0 );
-			Function_opcode : IN 	STD_LOGIC_VECTOR( func_op_size-1 DOWNTO 0 );
-			ALUOp 			: IN 	STD_LOGIC_VECTOR( AluOpSize-1 DOWNTO 0 );
-			ALUSrc 			: IN 	STD_LOGIC;
-			Zero 			: OUT	STD_LOGIC;
-			ALU_Result 		: OUT	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-			Add_Result 		: OUT	STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
-			PC_plus_4 		: IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
-			clock, reset	: IN 	STD_LOGIC );
+	PORT(	Read_data_1 			 : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			Read_data_2 			 : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			Sign_extend 		     : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			ALUOp 					 : IN 	STD_LOGIC_VECTOR( AluOpSize-1 DOWNTO 0 );
+			ALUSrc 					 : IN 	STD_LOGIC;
+			PC_plus_4 				 : IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
+			clock, reset			 : IN 	STD_LOGIC;
+			write_register_address_1 : IN   STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
+			write_register_address_0 : IN	STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
+			RegDst 					 : IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
+			Regwrite_in 			 : IN 	STD_LOGIC;
+			MemWrite_in 			 : IN 	STD_LOGIC;
+			MemtoReg_in 			 : IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
+			MemRead_in 				 : IN 	STD_LOGIC;
+			Regwrite_out 			 : OUT 	STD_LOGIC;
+			MemWrite_out 			 : OUT 	STD_LOGIC;
+			MemtoReg_out 			 : OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
+			MemRead_out 			 : OUT 	STD_LOGIC;
+			Read_data_1_out 		 : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			Read_data_2_out 		 : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			Zero 					 : OUT	STD_LOGIC;
+			ALU_Result 				 : OUT	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			Add_Result 				 : OUT	STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
+			write_register_address 	 : OUT STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 )
+			 );
 END Execute;
 
 ARCHITECTURE behavior OF Execute IS
@@ -41,10 +55,21 @@ SIGNAL ALU_output_mux		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 SIGNAL Branch_Add 			: STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
 SIGNAL ALU_ctl				: STD_LOGIC_VECTOR( 3 DOWNTO 0 );
 SIGNAL zeroes				: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-SIGNAL shamt_int           : integer;
-
+SIGNAL shamt_int            : integer;
+SIGNAL shamt 				: STD_LOGIC_VECTOR( shamt_size-1 DOWNTO 0 );
+SIGNAL Function_opcode 		: STD_LOGIC_VECTOR( func_op_size-1 DOWNTO 0 );
 
 BEGIN
+--------------------------------forward the controls ------------------------------------------------
+Regwrite_out  	<= Regwrite_in;
+MemWrite_out  	<= MemWrite_out;		
+MemtoReg_out  	<= MemtoReg_out; 			
+MemRead_out   	<= MemRead_out;		
+Read_data_1_out <= Read_data_1;
+Read_data_2_out <= Read_data_2;
+---------------------------------start the Execute ------------------------------------------------------
+	shamt <= Sign_extend(10 DOWNTO 6);
+	Function_opcode <= Sign_extend(5 DOWNTO 0);
 	Ainput <= Read_data_1; --No condition is required as they are physically always connected unlike B input
 	zeroes<=(OTHERS =>'0');
 
@@ -114,5 +139,11 @@ PROCESS ( ALU_ctl, Ainput, Binput )
 			-- Select ALU output        
   END PROCESS;
   ALU_result <= ALU_output_mux;
+  
+ -----------------------------------------mux choose register to write into --------------------------
+   write_register_address <= write_register_address_1 WHEN RegDst = "01"  ELSE 
+							write_register_address_0  WHEN RegDst = "00"  ELSE 
+							CONV_STD_LOGIC_VECTOR( ResSize-1, cmd_size ) WHEN RegDst = "10"  ELSE 
+							(others=>'0');
 END behavior;
 
