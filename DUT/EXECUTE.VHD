@@ -11,7 +11,7 @@ USE work.aux_package.all;
 
 
 ENTITY  Execute IS
-
+--									*********Constants Delclaration**********
 generic ( AluOpSize : positive := 9;
 		add_res_size : positive := 8;
 		shamt_size: positive := 5;
@@ -45,15 +45,15 @@ SIGNAL shamt_int           : integer;
 
 
 BEGIN
-	Ainput <= Read_data_1;
+	Ainput <= Read_data_1; --No condition is required as they are physically always connected unlike B input
 	zeroes<=(OTHERS =>'0');
 
 						-- ALU input mux
-	Binput <= Read_data_2 WHEN (ALUSrc = '0' or ALUOp(0) = '1') 
+	Binput <= Read_data_2 WHEN (ALUSrc = '0' or ALUOp(0) = '1') --Mux for Binput 
 		else  Sign_extend;
 					
 					
-	shamt_int<= CONV_INTEGER(shamt);
+	shamt_int<= CONV_INTEGER(shamt); --We converted to integer for validity
 					
 	ALU_ctl <= "0000" when ((Function_opcode = "100100" and ALUOp(1) = '1') or ALUOp(4)='1')  else --AND,ANDI
 			   "0001" when ((Function_opcode = "100101" and ALUOp(1) = '1') or ALUOp(3)='1') else --OR,ORI
@@ -72,7 +72,7 @@ BEGIN
 		    
 				
 						-- Adder to compute Branch Address
-	Branch_Add	<= PC_plus_4( PC_size-1 DOWNTO 2 ) +  Sign_extend( change_size-1 DOWNTO 0 ) ;
+	Branch_Add	<= PC_plus_4( PC_size-1 DOWNTO 2 ) +  Sign_extend( change_size-1 DOWNTO 0 ); 
 	Add_result 	<= Branch_Add( change_size-1 DOWNTO 0 );
 		
 	Zero <= '1' when ALU_output_mux= zeroes else '0';

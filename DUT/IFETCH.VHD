@@ -12,11 +12,12 @@ LIBRARY altera_mf;
 USE altera_mf.altera_mf_components.all;
 
 ENTITY Ifetch IS
+--									*********Constants Delclaration**********
 generic ( ResSize : positive := 32;
 		PC_size : positive := 10;
 		change_size: positive := 8); 
 	PORT(	 Instruction 		: OUT	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-        	 PC_plus_4_out 	: OUT	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );  --WE CHANGED IT FROM 10 BITS TO 4 BITS!!! and back!
+        	 PC_plus_4_out 	: OUT	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
 			 PC_out 			: OUT	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
         	 Add_result 		: IN 	STD_LOGIC_VECTOR( change_size-1 DOWNTO 0 );
         	 Branch 			: IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
@@ -29,7 +30,7 @@ generic ( ResSize : positive := 32;
 END Ifetch;
 
 ARCHITECTURE behavior OF Ifetch IS
-	SIGNAL PC, PC_plus_4 	 : STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
+	SIGNAL PC, PC_plus_4 	 : STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); --note that we set an additional signal for pc+4 for convinience 
 	SIGNAL next_PC, Mem_Addr, MUXres : STD_LOGIC_VECTOR( change_size-1 DOWNTO 0 );
 
 BEGIN

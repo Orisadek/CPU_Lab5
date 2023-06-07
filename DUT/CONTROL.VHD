@@ -53,22 +53,22 @@ BEGIN
 	Mul<= '1'  WHEN  (Opcode ="011100") ELSE '0';
 	
 	----------------------------------------------------------------------------
- 	ALUSrc  	<=  Lw OR Sw OR I_format;
+ 	ALUSrc  	<=  Lw OR Sw OR I_format; -- Src (sign ex or register)
 	MemtoReg 	<=  "01" when Lw='1' else "10"  when jal = '1' else "00";
-  	RegWrite 	<=  R_format OR Lw OR I_format or jal or Mul;
-  	MemRead 	<=  Lw;
-   	MemWrite 	<=  Sw; 
- 	Branch(0)   <=  Beq;
+  	RegWrite 	<=  R_format OR Lw OR I_format or jal or Mul; -- enable write to register
+  	MemRead 	<=  Lw; --enable Memory read 
+   	MemWrite 	<=  Sw; --enable Memory Write 
+ 	Branch(0)   <=  Beq; -- we defined 2 bits so we can distinguish between Branch ops. 
 	Branch(1)   <=  Bne;
-	ALUOp(8)<=Mul;
-	ALUOp(7)<=LUI;
-	ALUOp(6)<=Slti;
-	ALUOp(5)<=Xori;
-	ALUOp(4)<=Andi;
-	ALUOp(3)<=Ori;
-	ALUOp(2)<=Addi or Lw or Sw;
-	ALUOp(1) <=R_format;
-	ALUOp(0) <= Beq or Bne; 
+	ALUOp(8)<= Mul; --all control signals of ALU
+	ALUOp(7)<= LUI;
+	ALUOp(6)<= Slti;
+	ALUOp(5)<= Xori;
+	ALUOp(4)<= Andi;
+	ALUOp(3)<= Ori;
+	ALUOp(2)<= Addi or Lw or Sw; --all of which require adding in I format
+	ALUOp(1)<= R_format;
+	ALUOp(0)<= Beq or Bne; --conditional branch bit 
 
    END behavior;
 

@@ -8,6 +8,7 @@ USE work.aux_package.all;
 
 
 ENTITY Idecode IS
+--									*********Constants Delclaration**********								
 generic ( AluOpSize : positive := 9;
 		ResSize : positive := 32;
 		PC_size : positive := 10;
@@ -25,7 +26,7 @@ generic ( AluOpSize : positive := 9;
 			MemtoReg 	: IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			RegDst 		: IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			Sign_extend : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-			PC_plus_4   : IN    STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); --- change if needed
+			PC_plus_4   : IN    STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
 			clock,reset	: IN 	STD_LOGIC );
 END Idecode;
 
@@ -51,9 +52,9 @@ BEGIN
    	write_register_address_1	<= Instruction( 15 DOWNTO 11 );
    	write_register_address_0 	<= Instruction( 20 DOWNTO 16 );
 	
-   	Instruction_immediate_value_I <= Instruction( Imm_val_I-1 DOWNTO 0 );
+   	Instruction_immediate_value_I <= Instruction( Imm_val_I-1 DOWNTO 0 ); --decompositioning Immediate part of the intruction
 	Instruction_immediate_value_J<=Instruction( Imm_val_J-1 DOWNTO 0 );
-	J <= '1' when (Instruction(ResSize-1 downto 26) = "000010" or Instruction(ResSize-1 downto 26) = "000011") ELSE
+	J <= '1' when (Instruction(ResSize-1 downto 26) = "000010" or Instruction(ResSize-1 downto 26) = "000011") ELSE --detecting wether J type is required
 	'0'; --- jmp or jal
 	zeroes<=(OTHERS =>'0');
 					-- Read Register 1 Operation
