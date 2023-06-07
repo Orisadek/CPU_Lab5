@@ -12,7 +12,7 @@ USE work.aux_package.all;
 
 ENTITY  Execute IS
 
-generic ( AluOpSize : positive := 7;
+generic ( AluOpSize : positive := 9;
 		add_res_size : positive := 8;
 		shamt_size: positive := 5;
 		func_op_size: positive := 6;
@@ -57,14 +57,14 @@ BEGIN
 					
 	ALU_ctl <= "0000" when ((Function_opcode = "100100" and ALUOp(1) = '1') or ALUOp(4)='1')  else --AND,ANDI
 			   "0001" when ((Function_opcode = "100101" and ALUOp(1) = '1') or ALUOp(3)='1') else --OR,ORI
-			   "0010" when (((Function_opcode = "100000" or Function_opcode = "100001") and ALUOp(1) = '1') or ALUOp(2) = '1') else --ADD ,Addi , Sw,Lw
+			   "0010" when (((Function_opcode = "100000" or Function_opcode = "100001") and ALUOp(1) = '1') or ALUOp(2) = '1') else --ADD ,ADDU,Addi , Sw,Lw
 			   "0011" when ((Function_opcode = "100110" and ALUOp(1) = '1') or ALUOp(5) = '1')else --XOR,XORI
 			   "0100" when (Function_opcode  = "000000" and ALUOp(1) = '1') else --SHL
 			   "0101" when (Function_opcode  = "000010" and ALUOp(1) = '1') else --SHR
 			   "0110" when ((Function_opcode = "100010" and ALUOp(1) = '1') or ALUOp(0) = '1') else --SUB,Beq,Bne
 			   "0111" when ((Function_opcode = "101010" and ALUOp(1) = '1') or ALUOp(6) = '1') else  --SLT,SLTi
-			   "1000" when (Function_opcode  = "011000" and ALUOp(1) = '1') else -- MULT
-			   "1001" when (Function_opcode  = "001111" and ALUOp(1) = '1') else -- LUI
+			   "1000" when (ALUOp(8) = '1') else -- MULT
+			   "1001" when (ALUOp(7)='1') else -- LUI
 			   "1010" when (Function_opcode = "100001"  and  ALUOp(1) = '1') else -- addu
 			   "1111"; 
 			   

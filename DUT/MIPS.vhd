@@ -7,7 +7,7 @@ USE work.aux_package.all;
 
 
 ENTITY MIPS IS
-	generic ( AluOpSize : positive := 7;
+	generic ( AluOpSize : positive := 9;
 			ResSize : positive := 32;
 			shamt_size: positive := 5;
 			PC_size : positive := 10;

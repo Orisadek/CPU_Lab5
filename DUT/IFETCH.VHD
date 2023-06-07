@@ -42,7 +42,7 @@ inst_memory: altsyncram
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\testing\test5_prog.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\testing\test7_prog.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (

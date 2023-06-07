@@ -8,7 +8,7 @@ USE work.aux_package.all;
 
 
 ENTITY Idecode IS
-generic ( AluOpSize : positive := 7;
+generic ( AluOpSize : positive := 9;
 		ResSize : positive := 32;
 		PC_size : positive := 10;
 		change_size: positive := 8;

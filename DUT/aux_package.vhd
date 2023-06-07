@@ -5,7 +5,7 @@ USE IEEE.STD_LOGIC_ARITH.ALL;
 package aux_package is
 
 COMPONENT MIPS IS
-	generic ( AluOpSize : positive := 7;
+	generic ( AluOpSize : positive := 9;
 			ResSize : positive := 32;
 			shamt_size: positive := 5;
 			PC_size : positive := 10;
@@ -42,7 +42,7 @@ COMPONENT Ifetch
 END COMPONENT; 
 
 COMPONENT Idecode
-	generic ( AluOpSize : positive := 7;
+	generic ( AluOpSize : positive := 9;
 		ResSize : positive := 32;
 		PC_size : positive := 10;
 		change_size: positive := 8;
@@ -64,7 +64,7 @@ COMPONENT Idecode
 END COMPONENT;
 
 COMPONENT control
-generic ( AluOpSize : positive := 7 ;
+generic ( AluOpSize : positive := 9 ;
 		  cmd_size    : positive := 6 ); 
 	     PORT( 	Opcode 				: IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
 				func_op     	    : IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
@@ -81,7 +81,7 @@ generic ( AluOpSize : positive := 7 ;
 END COMPONENT;
 
 COMPONENT  Execute
-	generic ( AluOpSize : positive := 7;
+	generic ( AluOpSize : positive := 9;
 		add_res_size : positive := 8;
 		shamt_size: positive := 5;
 		func_op_size: positive := 6;
@@ -105,7 +105,7 @@ COMPONENT  Execute
 END COMPONENT;
 
 COMPONENT dmemory
-	generic ( AluOpSize : positive := 7;
+	generic ( AluOpSize : positive := 9;
 		ResSize : positive := 32;
 		address_size: positive := 8
 		); 

@@ -11,7 +11,7 @@ LIBRARY altera_mf;
 USE altera_mf.altera_mf_components.all;
 
 ENTITY dmemory IS
-	generic ( AluOpSize : positive := 7;
+	generic ( AluOpSize : positive := 9;
 		ResSize : positive := 32;
 		address_size: positive := 8
 		); 
@@ -32,7 +32,7 @@ BEGIN
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\testing\test5_data.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\testing\test7_data.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (
