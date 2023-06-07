@@ -39,8 +39,7 @@ BEGIN
    	Beq         <=  '1'  WHEN  Opcode = "000100"  ELSE '0';
 	Bne         <=  '1'  WHEN  Opcode = "000101"  ELSE '0';
   	RegDst    	<=  "01" when (R_format='1' or Mul='1')	else 
-					"10" when jal ='1' 
-					ELSE "00";
+					"10" when jal ='1' ELSE "00";
 	jmp			<=  '1'  WHEN  Opcode = "000010"  ELSE '0'; -- jmp
 	jr			<=  '1'  WHEN  (R_format='1' and func_op = "001000") ELSE '0'; --jr
 	jal			<=  '1'  WHEN  Opcode = "000011"  ELSE '0'; --jal
