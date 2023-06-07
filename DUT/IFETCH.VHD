@@ -62,9 +62,7 @@ inst_memory: altsyncram
       	PC_plus_4( PC_size-1 DOWNTO 2 )  <= PC( PC_size-1 DOWNTO 2 ) + 1;
        	PC_plus_4( 1 DOWNTO 0 )  <= "00";
 						-- Mux to select Branch Address or PC + 4        
-		--MUXres  <= 
-		--	Add_result  WHEN ( (( Branch(0) = '1' ) AND ( Zero = '1' )) or(( Branch(1) = '1' ) AND ( Zero = '0' )) )
-		--	ELSE   PC_plus_4( PC_size-1 DOWNTO 2 );
+	
 			
 		next_PC <= X"00" WHEN Reset = '1' ELSE
 				PC_plus_4( PC_size-1 DOWNTO 2 ) when PCSrc = "00" else

@@ -22,6 +22,7 @@ generic ( AluOpSize : positive := 9;
 			write_register_address_1 : OUT STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 			write_register_address_0 : OUT STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 			Sign_extend 			 : OUT STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			Sign_extend_J 			 : OUT STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			PC_plus_4_out 			 : OUT STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
 			RegDst 					 : OUT STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			Regwrite_out 			 : OUT STD_LOGIC;
@@ -29,6 +30,7 @@ generic ( AluOpSize : positive := 9;
 			MemWrite 				 : OUT STD_LOGIC;
 			MemtoReg 				 : OUT STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			MemRead 				 : OUT STD_LOGIC;
+			Jump 					 : OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 			Instruction 			 : IN  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			RegWrite_in 			 : IN  STD_LOGIC;
 			PC_plus_4   			 : IN  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
@@ -44,12 +46,12 @@ TYPE register_file IS ARRAY ( 0 TO ResSize-1 ) OF STD_LOGIC_VECTOR( ResSize-1 DO
 	SIGNAL register_array					: register_file;
 	--SIGNAL write_register_address 			: STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 	--SIGNAL write_data						: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	
 	SIGNAL read_register_1_address			: STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 	SIGNAL read_register_2_address			: STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 	SIGNAL Instruction_immediate_value_I	: STD_LOGIC_VECTOR( Imm_val_I-1 DOWNTO 0 );
 	SIGNAL Instruction_immediate_value_J	: STD_LOGIC_VECTOR( Imm_val_J-1 DOWNTO 0 );
 	SIGNAL zeroes							: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-	SIGNAL J								: STD_LOGIC;
 	
 BEGIN
 	read_register_1_address 	<= Instruction( 25 DOWNTO 21 );
@@ -59,27 +61,21 @@ BEGIN
 	PC_plus_4_out<=PC_plus_4;
 	
    	Instruction_immediate_value_I <= Instruction( Imm_val_I-1 DOWNTO 0 ); --decompositioning Immediate part of the intruction
-	Instruction_immediate_value_J<=Instruction( Imm_val_J-1 DOWNTO 0 );
-	J <= '1' when (Instruction(ResSize-1 downto 26) = "000010" or Instruction(ResSize-1 downto 26) = "000011") ELSE --detecting wether J type is required
-	'0'; --- jmp or jal
+	Instruction_immediate_value_J <= Instruction( Imm_val_J-1 DOWNTO 0 );
 	
 					-- Sign Extend 16-bits to 32-bits or from 26 to 32 bits
 		--- sign extention
-    Sign_extend <= X"0000" & Instruction_immediate_value_I WHEN (Instruction_immediate_value_I(Imm_val_I-1) = '0' 
-		and J = '0') ELSE
-		X"FFFF" & Instruction_immediate_value_I when (Instruction_immediate_value_I(Imm_val_I-1) = '1' 
-		and J = '0') ELSE
-		B"000000" & Instruction_immediate_value_J WHEN (Instruction_immediate_value_J(Imm_val_J-1) = '0' 
-		and J = '1') ELSE
-		B"111111" & Instruction_immediate_value_J when (Instruction_immediate_value_J(Imm_val_J-1) = '1' 
-		and J = '1');
+    Sign_extend <= X"0000" & Instruction_immediate_value_I WHEN (Instruction_immediate_value_I(Imm_val_I-1) = '0' ) ELSE
+		X"FFFF" & Instruction_immediate_value_I;
+	
+	Sign_extend_J<=B"000000" & Instruction_immediate_value_J WHEN (Instruction_immediate_value_J(Imm_val_J-1) = '0')  ELSE
+		B"111111" & Instruction_immediate_value_J when (Instruction_immediate_value_J(Imm_val_J-1) = '1');
 
 	decode_port_map : Idecode PORT map(
 			read_data_1					=> read_data_1,
 			read_data_2				 	=> read_data_2,
 			read_register_1_address	 	=> read_register_1_address,
 			read_register_2_address	 	=> read_register_2_address,
-			--Instruction 			 : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			RegWrite 					=> RegWrite_in,
 			write_register_address 	 	=> write_register_address, 
 			write_data					=> write_data,

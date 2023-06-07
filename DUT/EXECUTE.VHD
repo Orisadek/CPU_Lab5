@@ -13,13 +13,10 @@ USE work.aux_package.all;
 ENTITY  Execute IS
 --									*********Constants Delclaration**********
 generic ( AluOpSize 	: positive := 9;
-		  add_res_size  : positive := 8;
 		  shamt_size	: positive := 5;
 		  cmd_size		: positive := 5;
 		  func_op_size	: positive := 6;
 		  ResSize		: positive := 32;
-		  PC_size    	: positive := 10;
-		  change_size	: positive := 8;
 		  mult_size	 	: positive := 64	); 
 
 	PORT(	Read_data_1 			 : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
@@ -27,32 +24,15 @@ generic ( AluOpSize 	: positive := 9;
 			Sign_extend 		     : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			ALUOp 					 : IN 	STD_LOGIC_VECTOR( AluOpSize-1 DOWNTO 0 );
 			ALUSrc 					 : IN 	STD_LOGIC;
-			PC_plus_4 				 : IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 			clock, reset			 : IN 	STD_LOGIC;
-			write_register_address_1 : IN   STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
-			write_register_address_0 : IN	STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
-			RegDst 					 : IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
-			Regwrite_in 			 : IN 	STD_LOGIC;
-			MemWrite_in 			 : IN 	STD_LOGIC;
-			MemtoReg_in 			 : IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
-			MemRead_in 				 : IN 	STD_LOGIC;
-			Regwrite_out 			 : OUT 	STD_LOGIC;
-			MemWrite_out 			 : OUT 	STD_LOGIC;
-			MemtoReg_out 			 : OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
-			MemRead_out 			 : OUT 	STD_LOGIC;
-			Read_data_1_out 		 : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-			Read_data_2_out 		 : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Zero 					 : OUT	STD_LOGIC;
-			ALU_Result 				 : OUT	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-			Add_Result 				 : OUT	STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
-			write_register_address 	 : OUT STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 )
+			ALU_Result 				 : OUT	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 )
 			 );
 END Execute;
 
 ARCHITECTURE behavior OF Execute IS
 SIGNAL Ainput, Binput 		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 SIGNAL ALU_output_mux		: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-SIGNAL Branch_Add 			: STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
 SIGNAL ALU_ctl				: STD_LOGIC_VECTOR( 3 DOWNTO 0 );
 SIGNAL zeroes				: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 SIGNAL shamt_int            : integer;
@@ -60,19 +40,12 @@ SIGNAL shamt 				: STD_LOGIC_VECTOR( shamt_size-1 DOWNTO 0 );
 SIGNAL Function_opcode 		: STD_LOGIC_VECTOR( func_op_size-1 DOWNTO 0 );
 
 BEGIN
---------------------------------forward the controls ------------------------------------------------
-Regwrite_out  	<= Regwrite_in;
-MemWrite_out  	<= MemWrite_out;		
-MemtoReg_out  	<= MemtoReg_out; 			
-MemRead_out   	<= MemRead_out;		
-Read_data_1_out <= Read_data_1;
-Read_data_2_out <= Read_data_2;
+
 ---------------------------------start the Execute ------------------------------------------------------
 	shamt <= Sign_extend(10 DOWNTO 6);
 	Function_opcode <= Sign_extend(5 DOWNTO 0);
 	Ainput <= Read_data_1; --No condition is required as they are physically always connected unlike B input
 	zeroes<=(OTHERS =>'0');
-
 						-- ALU input mux
 	Binput <= Read_data_2 WHEN (ALUSrc = '0' or ALUOp(0) = '1') --Mux for Binput 
 		else  Sign_extend;
@@ -94,19 +67,13 @@ Read_data_2_out <= Read_data_2;
 			   "1111"; 
 			   
 	
-		    
-				
-						-- Adder to compute Branch Address
-	Branch_Add	<= PC_plus_4( PC_size-1 DOWNTO 2 ) +  Sign_extend( change_size-1 DOWNTO 0 ); 
-	Add_result 	<= Branch_Add( change_size-1 DOWNTO 0 );
-		
+	---------Zero signal --------------------------	    
 	Zero <= '1' when ALU_output_mux= zeroes else '0';
 
 PROCESS ( ALU_ctl, Ainput, Binput )
 	variable alu_tmp : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	variable alu_mult : STD_LOGIC_VECTOR( mult_size-1 DOWNTO 0 );
 	BEGIN
-	
 	
 					-- Select ALU operation
  	CASE ALU_ctl IS
@@ -140,10 +107,6 @@ PROCESS ( ALU_ctl, Ainput, Binput )
   END PROCESS;
   ALU_result <= ALU_output_mux;
   
- -----------------------------------------mux choose register to write into --------------------------
-   write_register_address <= write_register_address_1 WHEN RegDst = "01"  ELSE 
-							write_register_address_0  WHEN RegDst = "00"  ELSE 
-							CONV_STD_LOGIC_VECTOR( ResSize-1, cmd_size ) WHEN RegDst = "10"  ELSE 
-							(others=>'0');
+
 END behavior;
 
