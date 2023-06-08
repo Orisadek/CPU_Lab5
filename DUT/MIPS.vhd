@@ -269,7 +269,7 @@ write_data <=  ALU_Result_wb( ResSize-1 DOWNTO 0 ) WHEN ( MemtoReg_wb = "00" ) E
 forward:PROCESS(clock)
 		BEGIN
 			if(reset = '1') then
-			PC<=(OTHERS=>'0');
+				PC<=(OTHERS=>'0');
 			elsif( clock'EVENT  AND  clock = '1' )then
 				
 	-------------------------Fetch - in --------------------------------------

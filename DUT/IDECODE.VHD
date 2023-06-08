@@ -31,7 +31,8 @@ END Idecode;
 ARCHITECTURE behavior OF Idecode IS
 TYPE register_file IS ARRAY ( 0 TO ResSize-1 ) OF STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 
-	SIGNAL register_array					: register_file;
+SIGNAL register_array					: register_file;
+
 	
 BEGIN
 
@@ -40,6 +41,7 @@ BEGIN
 					-- Read Register 2 Operation		 
 	read_data_2 <= register_array( CONV_INTEGER( read_register_2_address ) );
 					-- Mux for Register Write Address
+	
 
 
 PROCESS
@@ -53,7 +55,7 @@ PROCESS
 				register_array(i) <= CONV_STD_LOGIC_VECTOR( i, ResSize );
  			END LOOP;
 					-- Write back to register - don't write to register 0
-  		ELSIF RegWrite = '1' AND write_register_address /= 0 THEN
+  		ELSIF RegWrite = '1' AND write_register_address/= 0 THEN
 		      register_array(CONV_INTEGER(write_register_address)) <= write_data;
 		END IF;
 	END PROCESS;
