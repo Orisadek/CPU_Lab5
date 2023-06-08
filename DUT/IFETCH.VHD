@@ -43,7 +43,7 @@ inst_memory: altsyncram
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\testing\test7_prog.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\pipline-test\test1_prog.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (
@@ -68,7 +68,7 @@ inst_memory: altsyncram
 				PC_plus_4( PC_size-1 DOWNTO 2 ) when PCSrc = "00" else
 				Add_result when PCSrc = "01" else
 				data_reg(PC_size-1 DOWNTO 2 ) when PCSrc = "10" else --jr 
-				JumpAdress( PC_size-1 DOWNTO 2 ) when PCSrc = "11") else --jal,j
+				JumpAdress( PC_size-1 DOWNTO 2 ) when PCSrc = "11" else --jal,j
 				(others=>'0');
 					
 	fetch_proc:process(clock)

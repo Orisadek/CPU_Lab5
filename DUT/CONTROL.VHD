@@ -21,7 +21,7 @@ generic ( AluOpSize : positive := 9 ;
 	MemRead 	: OUT 	STD_LOGIC;
 	MemWrite 	: OUT 	STD_LOGIC;
 	Branch 		: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
-	Jump 		: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
+	Jump 		: OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 	ALUop 		: OUT 	STD_LOGIC_VECTOR( AluOpSize-1 DOWNTO 0 );
 	clock, reset: IN 	STD_LOGIC );
 
@@ -43,7 +43,9 @@ BEGIN
 	jmp			<=  '1'  WHEN  Opcode = "000010"  ELSE '0'; -- jmp
 	jr			<=  '1'  WHEN  (R_format='1' and func_op = "001000") ELSE '0'; --jr
 	jal			<=  '1'  WHEN  Opcode = "000011"  ELSE '0'; --jal
-	PCSrc		<=  "11" when (jmp = '1' or jal = '1')  ELSE "01" when jr = '1' else "00"; 
+	Jump(0) <=jmp;
+	Jump(1) <=jr;
+	Jump(2) <=jal;
 	Addi<= '1'  WHEN  (Opcode = "001000") ELSE '0';
 	Ori <= '1'  WHEN  (Opcode ="001101") ELSE '0';
 	Andi<= '1'  WHEN  (Opcode = "001100") ELSE '0';

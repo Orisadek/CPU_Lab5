@@ -29,14 +29,16 @@ generic ( AluOpSize 	: positive := 9;
 			ALUSrc 					 : IN 	STD_LOGIC;
 			PC_plus_4 				 : IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 			clock, reset			 : IN 	STD_LOGIC;
-			write_register_address_1 : IN   STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
-			write_register_address_0 : IN	STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
+			write_reg_address_1 	 : IN   STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
+			write_reg_address_0      : IN	STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 			RegDst 					 : IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			Regwrite_in 			 : IN 	STD_LOGIC;
 			MemWrite_in 			 : IN 	STD_LOGIC;
 			MemtoReg_in 			 : IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			MemRead_in 				 : IN 	STD_LOGIC;
 			Sign_extend_J   		 : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			Jump            		 : IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
+			Jump_out        		 : OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 			Sign_extend_J_out   	 : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Regwrite_out 			 : OUT 	STD_LOGIC;
 			MemWrite_out 			 : OUT 	STD_LOGIC;
@@ -59,14 +61,15 @@ SIGNAL zeroes				: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 
 BEGIN
 --------------------------------forward the controls ------------------------------------------------
-Regwrite_out  	<= Regwrite_in;
-MemWrite_out  	<= MemWrite_in;		
-MemtoReg_out  	<= MemtoReg_in; 			
-MemRead_out   	<= MemRead_in;		
-Read_data_1_out <= Read_data_1;
-Read_data_2_out <= Read_data_2;
-Sign_extend_J_out <=Sign_extend_J;
-PC_plus_4_out   <= PC_plus_4;
+Regwrite_out  		<= Regwrite_in;
+MemWrite_out  		<= MemWrite_in;		
+MemtoReg_out  		<= MemtoReg_in; 			
+MemRead_out   		<= MemRead_in;		
+Read_data_1_out 	<= Read_data_1;
+Read_data_2_out		<= Read_data_2;
+Sign_extend_J_out   <= Sign_extend_J;
+PC_plus_4_out   	<= PC_plus_4;
+Jump_out			<= Jump;
 ---------------------------------start the Execute ------------------------------------------------------
 	
 				
@@ -77,9 +80,9 @@ PC_plus_4_out   <= PC_plus_4;
 	EXE:  Execute
    	PORT MAP (	Read_data_1 	=>Read_data_1,
 				Read_data_2 	=>Read_data_2,
-				Sign_extend 	=> Sign_extend_ex,
-				ALUOp 			=> ALUop_ex,
-				ALUSrc 			=> ALUSrc_ex,	
+				Sign_extend 	=> Sign_extend,
+				ALUOp 			=> ALUop,
+				ALUSrc 			=> ALUSrc,	
 				Zero 			=> Zero,
                 ALU_Result		=> ALU_Result,
                 Clock			=> clock,
@@ -87,8 +90,8 @@ PC_plus_4_out   <= PC_plus_4;
 
   
  -----------------------------------------mux choose register to write into --------------------------
-   write_register_address <= write_register_address_1 WHEN RegDst = "01"  ELSE 
-							write_register_address_0  WHEN RegDst = "00"  ELSE 
+   write_register_address <= write_reg_address_1 WHEN RegDst = "01"  ELSE 
+							write_reg_address_0  WHEN RegDst = "00"  ELSE 
 							CONV_STD_LOGIC_VECTOR( ResSize-1, cmd_size ) WHEN RegDst = "10"  ELSE 
 							(others=>'0');
 END behavior;

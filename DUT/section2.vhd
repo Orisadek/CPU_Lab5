@@ -19,46 +19,40 @@ generic ( AluOpSize : positive := 9;
 		);
 	  PORT(	read_data_1				 : OUT STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			read_data_2				 : OUT STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-			write_register_address_1 : OUT STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
-			write_register_address_0 : OUT STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
+			write_reg_address_1 	 : OUT STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
+			write_reg_address_0      : OUT STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 			Sign_extend 			 : OUT STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Sign_extend_J 			 : OUT STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			PC_plus_4_out 			 : OUT STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
 			RegDst 					 : OUT STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			Regwrite_out 			 : OUT STD_LOGIC;
 			ALUop 					 : OUT STD_LOGIC_VECTOR(  AluOpSize-1 DOWNTO 0 );
+			ALUSrc 					 : OUT 	STD_LOGIC;
 			MemWrite 				 : OUT STD_LOGIC;
 			MemtoReg 				 : OUT STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			MemRead 				 : OUT STD_LOGIC;
 			Jump 					 : OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
+			Branch 				     : OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			Instruction 			 : IN  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			RegWrite_in 			 : IN  STD_LOGIC;
 			PC_plus_4   			 : IN  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
-			write_register_address 	 : IN  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
+			write_register_address 	 : IN  STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 ); 
 			write_data				 : IN  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			clock,reset				 : IN  STD_LOGIC );
 END sectionTwo;
 
 
 ARCHITECTURE behavior OF sectionTwo IS
-TYPE register_file IS ARRAY ( 0 TO ResSize-1 ) OF STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-
-	SIGNAL register_array					: register_file;
-	--SIGNAL write_register_address 			: STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
-	--SIGNAL write_data						: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-	
-	SIGNAL read_register_1_address			: STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
-	SIGNAL read_register_2_address			: STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 	SIGNAL Instruction_immediate_value_I	: STD_LOGIC_VECTOR( Imm_val_I-1 DOWNTO 0 );
 	SIGNAL Instruction_immediate_value_J	: STD_LOGIC_VECTOR( Imm_val_J-1 DOWNTO 0 );
-	SIGNAL zeroes							: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+					
 	
 BEGIN
-	read_register_1_address 	<= Instruction( 25 DOWNTO 21 );
-   	read_register_2_address 	<= Instruction( 20 DOWNTO 16 );
-   	write_register_address_1	<= Instruction( 15 DOWNTO 11 );
-   	write_register_address_0 	<= Instruction( 20 DOWNTO 16 );
-	PC_plus_4_out<=PC_plus_4;
+----------------------------forward signals------------------------------------------
+   	write_reg_address_1	<= Instruction( 15 DOWNTO 11 );
+   	write_reg_address_0 <= Instruction( 20 DOWNTO 16 );
+	PC_plus_4_out		<= PC_plus_4;
+------------------------------------------------------------------------------------------
 	
    	Instruction_immediate_value_I <= Instruction( Imm_val_I-1 DOWNTO 0 ); --decompositioning Immediate part of the intruction
 	Instruction_immediate_value_J <= Instruction( Imm_val_J-1 DOWNTO 0 );
@@ -71,11 +65,12 @@ BEGIN
 	Sign_extend_J<=B"000000" & Instruction_immediate_value_J WHEN (Instruction_immediate_value_J(Imm_val_J-1) = '0')  ELSE
 		B"111111" & Instruction_immediate_value_J when (Instruction_immediate_value_J(Imm_val_J-1) = '1');
 
-	decode_port_map : Idecode PORT map(
+	decode_port_map : Idecode 
+		PORT MAP(
 			read_data_1					=> read_data_1,
 			read_data_2				 	=> read_data_2,
-			read_register_1_address	 	=> read_register_1_address,
-			read_register_2_address	 	=> read_register_2_address,
+			read_register_1_address	 	=> Instruction( 25 DOWNTO 21 ),
+			read_register_2_address	 	=> Instruction( 20 DOWNTO 16 ),
 			RegWrite 					=> RegWrite_in,
 			write_register_address 	 	=> write_register_address, 
 			write_data					=> write_data,
@@ -88,7 +83,7 @@ BEGIN
 				RegDst 			=> RegDst,
 				ALUSrc 			=> ALUSrc,
 				MemtoReg 		=> MemtoReg,
-				RegWrite 		=> RegWrite,
+				RegWrite 		=> Regwrite_out,
 				MemRead 		=> MemRead,
 				MemWrite 		=> MemWrite,
 				Branch 			=> Branch,
