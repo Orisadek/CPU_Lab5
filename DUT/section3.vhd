@@ -38,6 +38,8 @@ generic ( AluOpSize 	: positive := 9;
 			MemRead_in 				 : IN 	STD_LOGIC;
 			Sign_extend_J   		 : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Jump            		 : IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
+			Branch 					 : IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
+			Branch_out 				 : OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			Jump_out        		 : OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 			Sign_extend_J_out   	 : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Regwrite_out 			 : OUT 	STD_LOGIC;
@@ -70,6 +72,7 @@ Read_data_2_out		<= Read_data_2;
 Sign_extend_J_out   <= Sign_extend_J;
 PC_plus_4_out   	<= PC_plus_4;
 Jump_out			<= Jump;
+Branch_out          <= Branch;
 ---------------------------------start the Execute ------------------------------------------------------
 	
 				

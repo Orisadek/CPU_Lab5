@@ -20,8 +20,6 @@ generic ( ResSize : positive := 32;
         	 PC_plus_4_out 		: OUT	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
 			 PC_out 			: OUT	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
         	 Add_result 		: IN 	STD_LOGIC_VECTOR( change_size-1 DOWNTO 0 );
-        	-- Branch 			: IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
-        	-- Zero 				: IN 	STD_LOGIC;
         	 clock, reset 		: IN 	STD_LOGIC;
 			 data_reg 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			 PCSrc       		: IN   STD_LOGIC_VECTOR( 1 DOWNTO 0 ); 
@@ -43,7 +41,7 @@ inst_memory: altsyncram
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\pipline-test\test2_prog.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\pipline-test\test6_prog.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (

@@ -48,6 +48,7 @@ BEGIN
 	MemToReg_out   <= MemToReg_in;
 	RegWrite_out   <= RegWrite_in;
 	Alu_res_out    <= ALU_Result;
+	Add_res_out    <= Add_res;
 	PC_plus_4_out  <= PC_plus_4;
 	read_data_1_out<= read_data_1;
 	w_address_out  <= w_address;

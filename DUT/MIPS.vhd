@@ -84,6 +84,7 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL	MemtoReg_id_ex 				   : STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 	SIGNAL	MemRead_id_ex 				   : STD_LOGIC;
 	SIGNAL  Jump_id_ex           		   : STD_LOGIC_VECTOR( 2 DOWNTO 0 );
+	SIGNAL  Branch_id_ex 				   : STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 ---------------------------Execute - out  section 3--------------------------------------------		
 	SIGNAL	Regwrite_ex_mem 	           : STD_LOGIC;
 	SIGNAL	MemWrite_ex_mem  		       : STD_LOGIC;
@@ -98,7 +99,7 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL  read_reg_2_ex_mem 		       : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL  PC_plus_4_ex_mem			   : STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 	SIGNAL  Jump_ex_mem           		   : STD_LOGIC_VECTOR( 2 DOWNTO 0 );
-				
+	SIGNAL  Branch_ex_mem 				   : STD_LOGIC_VECTOR( 1 DOWNTO 0 );			
 --------------------------memory - in section 4 ----------------------------------------------		 
 	SIGNAL	Regwrite_mem 	           	   : STD_LOGIC;
 	SIGNAL	MemWrite_mem  		           : STD_LOGIC;
@@ -202,7 +203,9 @@ BEGIN
 				MemWrite_in    	 		=> MemWrite_id_ex,
 				MemtoReg_in     		=> MemtoReg_id_ex,
 				MemRead_in      		=> MemRead_id_ex,
-				Jump            		=> Jump_id_ex,  
+				Jump            		=> Jump_id_ex, 
+				Branch 					=> Branch_id_ex,
+				Branch_out 				=> Branch_ex_mem,				
 				Jump_out        		=> Jump_ex_mem,
 				Regwrite_out    		=> Regwrite_ex_mem,
 				MemWrite_out    		=> MemWrite_ex_mem,
@@ -228,14 +231,14 @@ BEGIN
 	PORT MAP (	
 				------------------Out---------------------------------
 				read_data 			=> read_data_mem_wb,
-				JumpAdress			=> JumpAdress_mem_wb,
-				PCSrc 	 			=> PCSrc_mem_wb,
+				JumpAdress			=> JumpAdress,
+				PCSrc 	 			=> PCSrc,
 				RegWrite_out		=> Regwrite_mem_wb,
 				MemToReg_out		=> MemtoReg_mem_wb,
 				w_address_out       => write_reg_address_mem_wb,
 				Alu_res_out         => ALU_Result_mem_wb, 
-				Add_res_out         => Add_Result_mem_wb, 
-				read_data_1_out     => read_reg_1_mem_wb,
+				Add_res_out         => Add_result, 
+				read_data_1_out     => read_data_1_if,
 				PC_plus_4_out     	=> PC_plus_4_mem_wb,
 				-------------------IN---------------------------------
 				read_data_1    		=> read_reg_1_mem,
@@ -270,14 +273,12 @@ forward:PROCESS(clock)
 		BEGIN
 			if(reset = '1') then
 				PC<=(OTHERS=>'0');
-			elsif( clock'EVENT  AND  clock = '1' )then
-				
+			elsif( clock'EVENT  AND  clock = '1' )then		
 	-------------------------Fetch - in --------------------------------------
-	PCSrc           <= PCSrc_mem_wb; 
-	Add_result      <= Add_Result_mem_wb;
-	JumpAdress      <= JumpAdress_mem_wb;
-	read_data_1_if 	<= read_reg_1_mem_wb;
-
+	--PCSrc           <= PCSrc_mem_wb; 
+	--Add_result      <= Add_Result_mem_wb;
+	--JumpAdress      <= JumpAdress_mem_wb;
+	--read_data_1_if 	<= read_reg_1_mem_wb;
 	-------------------------Decode - IN section 2-------------------------------------------
 	Instruction_ID  <= Instruction_If_Id;
     PC_plus_4_ID	<= PC_plus_4_If_Id ;			      
@@ -297,7 +298,7 @@ forward:PROCESS(clock)
 	MemtoReg_id_ex 			<= MemtoReg;
 	MemRead_id_ex 			<= MemRead;
 	Jump_id_ex           	<= Jump;
-	
+	Branch_id_ex 			<= Branch;
 --------------------------memory - in section 4 ----------------------------------------------		 
 	Regwrite_mem  	      <= Regwrite_ex_mem;	           
 	MemWrite_mem  	      <= MemWrite_ex_mem;		          
@@ -312,9 +313,9 @@ forward:PROCESS(clock)
 	PC_plus_4_mem		  <= PC_plus_4_ex_mem;			
 	Sign_extend_J_mem	  <= Sign_extend_J_ex_mem;	 
 	Jump_mem			  <= Jump_ex_mem;			
-	Branch_mem    		  <= Branch;              
+	Branch_mem    		  <= Branch_ex_mem;              
 
----------------------------write back in ------------------------------------------------
+---------------------------write back in 	------------------------------------------------
 	RegWrite_in				<= Regwrite_mem_wb ;
 	MemtoReg_wb 			<= MemtoReg_mem_wb; 	
 	write_register_address  <= write_reg_address_mem_wb;
