@@ -22,9 +22,9 @@ ENTITY sectionFour IS
 			Alu_res_out         : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Add_res_out         : OUT 	STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
 			w_address_out       : OUT 	STD_LOGIC_VECTOR(cmd_size-1 DOWNTO 0 );
-			read_data_1_out     : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 ); 
+			--read_data_1_out     : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 ); 
 			PC_plus_4_out     	: OUT    STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
-			read_data_1    		: IN 	STD_LOGIC_VECTOR( ResSize-1  DOWNTO 0 ); 
+		--	read_data_1    		: IN 	STD_LOGIC_VECTOR( ResSize-1  DOWNTO 0 ); 
 			Add_res      		: IN 	STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
 			w_address           : IN 	STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 			RegWrite_in			: IN 	STD_LOGIC;
@@ -32,11 +32,11 @@ ENTITY sectionFour IS
 			PC_plus_4     		: IN    STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
 			Branch				: IN  	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			Zero				: IN 	STD_LOGIC;
-			Jump				: IN  	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
+			--Jump				: IN  	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
         	ALU_Result 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
         	write_data 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	   		MemRead, Memwrite 	: IN 	STD_LOGIC;
-			Sign_extend_J       : IN  	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			--Sign_extend_J       : IN  	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
             clock,reset			: IN 	STD_LOGIC );
 END sectionFour;
 
@@ -50,7 +50,7 @@ BEGIN
 	Alu_res_out    <= ALU_Result;
 	Add_res_out    <= Add_res;
 	PC_plus_4_out  <= PC_plus_4;
-	read_data_1_out<= read_data_1;
+	--read_data_1_out<= read_data_1;
 	w_address_out  <= w_address;
 -------------------------------------------start mem -----------------------------------------------
 	PCSrc<= "01" when ((Branch(0)='1' and Zero = '1') or (Branch(1)='1' and Zero = '0')) else "00";

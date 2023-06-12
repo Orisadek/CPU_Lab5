@@ -18,6 +18,9 @@
 	lw $t3,8#$t3=g
 	lw $t4,12#$t4=h
 	slti $t0,$t1,5 #if i<j than $t0=1
+	add $t8, $zero, $zero
+	add $t8, $zero, $zero
+	add $t8, $zero, $zero
 	beq $t0,$zero,ELSE #if i>=j then go to else part
 	add $t8, $zero, $zero
 	add $t8, $zero, $zero

@@ -86,7 +86,9 @@ PROCESS ( ALU_ctl, Ainput, Binput )
 						-- ALU performs ALUresult = A_input XOR B_input 
  	 	WHEN "0011" 	=>	ALU_output_mux <= Ainput xor Binput;
 						-- ALU performs ALUresult = AINPUT shifted *LEFT* by immdediate value (Binput)
- 	 	WHEN "0100" 	=>ALU_output_mux 	<= Binput(ResSize-1-shamt_int DOWNTO 0 )& zeroes(shamt_int-1 DOWNTO 0);
+ 	 	WHEN "0100" 	=>--ALU_output_mux 	<= Binput(ResSize-1-shamt_int DOWNTO 0 )& zeroes(shamt_int-1 DOWNTO 0);
+						ALU_output_mux(ResSize-1 DOWNTO shamt_int) 	<= Binput(ResSize-1-shamt_int DOWNTO 0 );
+						ALU_output_mux(shamt_int-1 DOWNTO 0)  <= zeroes(shamt_int-1 DOWNTO 0);
 						-- ALU performs ALUresult = AINPUT shifted *RIGHT* by immdediate value(Binput)
  	 	WHEN "0101" 	=>ALU_output_mux 	<= zeroes(shamt_int-1 DOWNTO 0) & Binput(ResSize-1 downto shamt_int);
 						-- ALU performs ALUresult = A_input -B_input

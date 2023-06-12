@@ -43,6 +43,7 @@ ARCHITECTURE structure OF MIPS IS
 	-------------------------Fetch - out -------------------------------------
 	SIGNAL PC_plus_4_If_Id 				   : STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 	SIGNAL Instruction_If_Id			   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	SIGNAL PC_out						   :STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 	-------------------------Decode - IN section 2-------------------------------------------
 	SIGNAL Instruction_ID 			       :  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
     SIGNAL PC_plus_4_ID 			       :  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
@@ -141,7 +142,7 @@ BEGIN
    ALU_result_out 	<= ALU_Result_wb;
    read_data_1_out 	<= read_data_1_ex;
    read_data_2_out 	<= read_data_2_ex;
-
+   PC<=PC_out;
    write_data_out <= ALU_Result_wb WHEN ( MemtoReg_wb = "00" ) ELSE 
 					read_data_wb WHEN ( MemtoReg_wb = "01" ) ELSE  
 					X"00000"&B"00"&PC_plus_4_mem_wb WHEN ( MemtoReg_wb = "10" ) ELSE   ---CONV_STD_LOGIC_VECTOR( 31, 32 )
@@ -156,10 +157,10 @@ BEGIN
 	PORT MAP (	Instruction 	=> Instruction_If_Id,
     	    	PC_plus_4_out 	=> PC_plus_4_If_Id,
 				Add_result 		=> Add_result,
-				PC_out 			=> PC,        		
+				PC_out 			=> PC_out,        		
 				clock 			=> clock,  
 				reset 			=> reset,
-				data_reg 	    => read_data_1_if,
+				data_reg 	    => read_data_1_id_ex,
 				PCSrc           => PCSrc,
 				Jump            => Jump,
 				JumpAdress		=> JumpAdress);
@@ -198,17 +199,17 @@ BEGIN
    	PORT MAP (	Read_data_1 			=> read_data_1_ex,
              	Read_data_2 			=> read_data_2_ex,
 				Sign_extend 			=> Sign_extend_ex,
-				Sign_extend_J   		=> Sign_extend_J_ex,
-				Sign_extend_J_out   	=> Sign_extend_J_ex_mem,
+				--Sign_extend_J   		=> Sign_extend_J_ex,
+				--Sign_extend_J_out   	=> Sign_extend_J_ex_mem,
 				RegDst         			=> RegDst_ex,
 				Regwrite_in    			=> Regwrite_id_ex,
 				MemWrite_in    	 		=> MemWrite_id_ex,
 				MemtoReg_in     		=> MemtoReg_id_ex,
 				MemRead_in      		=> MemRead_id_ex,
-				Jump            		=> Jump_id_ex, 
+				--Jump            		=> Jump_id_ex, 
 				Branch 					=> Branch_id_ex,
 				Branch_out 				=> Branch_ex_mem,				
-				Jump_out        		=> Jump_ex_mem,
+				--Jump_out        		=> Jump_ex_mem,
 				Regwrite_out    		=> Regwrite_ex_mem,
 				MemWrite_out    		=> MemWrite_ex_mem,
 				MemtoReg_out			=> MemtoReg_ex_mem,
@@ -240,10 +241,10 @@ BEGIN
 				w_address_out       => write_reg_address_mem_wb,
 				Alu_res_out         => ALU_Result_mem_wb, 
 				Add_res_out         => Add_result, 
-				read_data_1_out     => read_data_1_if,
+				--read_data_1_out     => read_data_1_if,
 				PC_plus_4_out     	=> PC_plus_4_mem_wb,
 				-------------------IN---------------------------------
-				read_data_1    		=> read_reg_1_mem,
+				--read_data_1    		=> read_reg_1_mem,
 				w_address           => write_reg_address_mem,
 				Add_res             => Add_Result_mem,
 				RegWrite_in			=> Regwrite_mem,
@@ -251,12 +252,12 @@ BEGIN
 				PC_plus_4     		=> PC_plus_4_mem,
 				Branch				=> Branch_mem, 
 				Zero				=> Zero_mem , 
-				Jump				=> Jump_mem , 
+				--Jump				=> Jump_mem , 
 				ALU_Result 			=> ALU_Result_mem,
 				write_data 			=> read_reg_2_mem,
 				MemRead             => MemRead_mem,
 				Memwrite 			=> MemWrite_mem,
-				Sign_extend_J       => Sign_extend_J_mem, 
+				--Sign_extend_J       => Sign_extend_J_mem, 
 				clock           	=> clock,
 				reset				=> reset
 				);
@@ -265,8 +266,7 @@ BEGIN
 
 ----------- Mux to bypass data memory for Rformat instructions  ---- change later
 write_data <=  ALU_Result_wb( ResSize-1 DOWNTO 0 ) WHEN ( MemtoReg_wb = "00" ) ELSE  --- to register file
-			   read_data_wb WHEN ( MemtoReg_wb = "01" ) ELSE  
-			   zeroes(ResSize-1 downto PC_size )&PC_plus_4_mem_wb WHEN ( MemtoReg_wb = "10" ) ELSE   
+			   read_data_wb WHEN ( MemtoReg_wb = "01" ) ELSE     
 			   (others=>'0');
 	  
 -------------------------------forward the signals-------------------------------------------	
@@ -288,7 +288,7 @@ forward:PROCESS(clock)
 	read_data_1_ex 			<= read_data_1_id_ex;	          
 	read_data_2_ex 			<= read_data_2_id_ex;		
 	Sign_extend_ex 			<= Sign_Extend;		   
-	Sign_extend_J_ex 		<= Sign_extend_J;			   
+	--Sign_extend_J_ex 		<= Sign_extend_J;			   
 	ALUOp_ex 				<= ALUop;			       
 	ALUSrc_ex 				<= ALUSrc;
 	register_address_ex_1   <= write_reg_address_1;
@@ -299,7 +299,7 @@ forward:PROCESS(clock)
 	MemWrite_id_ex 			<= MemWrite;
 	MemtoReg_id_ex 			<= MemtoReg;
 	MemRead_id_ex 			<= MemRead;
-	Jump_id_ex           	<= Jump;
+	--Jump_id_ex           	<= Jump;
 	Branch_id_ex 			<= Branch;
 --------------------------memory - in section 4 ----------------------------------------------		 
 	Regwrite_mem  	      <= Regwrite_ex_mem;	           
@@ -310,11 +310,11 @@ forward:PROCESS(clock)
 	ALU_Result_mem  	  <= ALU_Result_ex_mem;		 
 	Add_Result_mem  	  <= Add_Result_ex_mem;			  
 	write_reg_address_mem <= write_register_address_ex_mem;   
-	read_reg_1_mem 	      <= read_reg_1_ex_mem;	         
+	--read_reg_1_mem 	      <= read_reg_1_ex_mem;	         
 	read_reg_2_mem 		  <= read_reg_2_ex_mem;	         
 	PC_plus_4_mem		  <= PC_plus_4_ex_mem;			
-	Sign_extend_J_mem	  <= Sign_extend_J_ex_mem;	 
-	Jump_mem			  <= Jump_ex_mem;			
+	--Sign_extend_J_mem	  <= Sign_extend_J_ex_mem;	 
+	--Jump_mem			  <= Jump_ex_mem;			
 	Branch_mem    		  <= Branch_ex_mem;              
 
 ---------------------------write back in 	------------------------------------------------
