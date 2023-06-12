@@ -19,7 +19,7 @@ ENTITY MIPS IS
 			stall_size: positive := 8;
 			cmd_size: positive := 5); 
 			
-	PORT( reset, clock					: IN 	STD_LOGIC; 
+	PORT( reset, clock				: IN 	STD_LOGIC; 
 	      BPADD  						: IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
 		-- Output important signals to pins for easy display in Simulator
 		PC								: OUT  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
@@ -153,13 +153,20 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL	ALU_Result_wb  			  	   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL	read_data_wb  			   	   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL  Instruction_wb 	        	   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-------------------------------------------------------------------------------------------
+---------------------------stall unit---------------------------------------------------------------
+	SIGNAL  PCWriteDisable				   : STD_LOGIC;
+	SIGNAL	If_idWriteDisable	 		   : STD_LOGIC;
+	SIGNAL	stall 				           : STD_LOGIC;
+	-----------------------flush signals -------------------------------------
+	SIGNAL flush_if_id					   : STD_LOGIC;
+	SIGNAL flush_id_ex					   : STD_LOGIC;
+	SIGNAL flush_ex_mem			           : STD_LOGIC;
 	
 BEGIN
 					-- copy important signals to output pins for easy 
 					-- display in Simulator
     zeroes<=(OTHERS =>'0');
-  
+	STtrigger <= '1' when (BPADD=PC_out) ELSE '0';
     ID_Instruction	<= Instruction_ID;
     ID_read_data_1	<= read_data_1_id_ex;
     ID_read_data_2	<= read_data_2_id_ex;
@@ -186,7 +193,8 @@ BEGIN
     	    	PC_plus_4_out 	=> PC_plus_4_If_Id,
 				Add_result 		=> Add_result,
 				PC_out 			=> PC_out,        		
-				clock 			=> clock,  
+				clock 			=> clock, 
+				PCWriteDisable	=> PCWriteDisable,			
 				reset 			=> reset,
 				data_reg 	    => read_data_1_id_ex,
 				PCSrc           => PCSrc,
@@ -197,6 +205,7 @@ BEGIN
    s2 : sectionTwo	
    	PORT MAP (	read_data_1 			 => read_data_1_id_ex,
         		read_data_2 			 => read_data_2_id_ex,
+				stall                    => stall,
 				write_reg_address_1 	 => write_reg_address_1,
 				write_reg_address_0		 => write_reg_address_0,
 				PC_plus_4_out 			 => PC_plus_4_id_ex,
@@ -286,6 +295,18 @@ BEGIN
 				reset				=> reset
 				);
 				
+	stall:stallUnit
+	PORT MAP (
+			PCWriteDisable		=>PCWriteDisable,
+			If_idWriteDisable	=>If_idWriteDisable,
+			stall 				=>stall,
+			id_ex_reg_write    	=>Regwrite_id_ex,
+			ex_mem_reg_write    =>Regwrite_mem,
+			mem_wb_reg_write    =>RegWrite_in,
+			Instruction         =>Instruction_ID,
+			clock				=>clock,
+			reset				=>reset );
+END stallUnit;
 				
 
 ----------- Mux to bypass data memory for Rformat instructions  ---- change later
@@ -299,53 +320,118 @@ write_data <=  ALU_Result_wb( ResSize-1 DOWNTO 0 ) WHEN ( MemtoReg_wb = "00" ) E
 forward:PROCESS(clock)
 BEGIN
 	if(reset = '1') then
-			PC	<=	(OTHERS=>'0');
+		PC	<= (OTHERS=>'0');
 	elsif( clock'EVENT  AND  clock = '1' )then		
-	PC		    			<= PC_out;
+		PC	<= PC_out;
+end if;
+END PROCESS;
+
+If_id:PROCESS(clock)
+BEGIN
+	if(reset = '1' or flush_if_id = '1') then
+		Instruction_ID <=	(OTHERS=>'0');
+		PC_plus_4_ID   <=	(OTHERS=>'0');
+	elsif( clock'EVENT  AND  clock = '1' and not(If_idWriteDisable='1'))then	
 	-------------------------Decode - IN section 2-------------------------------------------
-	Instruction_ID  		 <= Instruction_If_Id;
-    PC_plus_4_ID			 <= PC_plus_4_If_Id ;			      
+		Instruction_ID  		 <= Instruction_If_Id;
+		PC_plus_4_ID			 <= PC_plus_4_If_Id ;
+	elsif( clock'EVENT  AND  clock = '1' and If_idWriteDisable='1')then
+		null;
+	end if;
+END PROCESS;
+
+id_ex:PROCESS(clock)
+BEGIN
+	if(reset = '1') then
+		read_data_1_ex 			 <=	(OTHERS=>'0');	          
+		read_data_2_ex 			 <=	(OTHERS=>'0');	
+		Sign_extend_ex 			 <=	(OTHERS=>'0');		   			   
+		ALUOp_ex 				 <=	(OTHERS=>'0');			       
+		ALUSrc_ex 				 <=	'0';
+		register_address_ex_1    <=	(OTHERS=>'0');
+		register_address_ex_0 	 <=	(OTHERS=>'0');
+		PC_plus_4_ex 			 <=	(OTHERS=>'0');
+		RegDst_ex 				 <=	(OTHERS=>'0');
+		Regwrite_id_ex 		     <=	'0';
+		MemWrite_id_ex 			 <=	'0';
+		MemtoReg_id_ex 			 <=	(OTHERS=>'0');
+		MemRead_id_ex 			 <=	'0';
+		Branch_id_ex 			 <=	(OTHERS=>'0');
+		Instruction_Ex_in        <=	(OTHERS=>'0');
+	elsif( clock'EVENT  AND  clock = '1' )then
 	------------------------Execute - in  section 3-------------------------------------
-	read_data_1_ex 			 <= read_data_1_id_ex;	          
-	read_data_2_ex 			 <= read_data_2_id_ex;		
-	Sign_extend_ex 			 <= Sign_Extend;		   			   
-	ALUOp_ex 				 <= ALUop;			       
-	ALUSrc_ex 				 <= ALUSrc;
-	register_address_ex_1    <= write_reg_address_1;
-	register_address_ex_0 	 <= write_reg_address_0;
-	PC_plus_4_ex 			 <= PC_plus_4_id_ex;
-	RegDst_ex 				 <= RegDst;
-	Regwrite_id_ex 		     <= Regwrite_ctl_out;
-	MemWrite_id_ex 			 <= MemWrite;
-	MemtoReg_id_ex 			 <= MemtoReg;
-	MemRead_id_ex 			 <= MemRead;
-	Branch_id_ex 			 <= Branch;
-	Instruction_Ex_in        <= Instruction_ID_out;
+		read_data_1_ex 			 <= read_data_1_id_ex;	          
+		read_data_2_ex 			 <= read_data_2_id_ex;		
+		Sign_extend_ex 			 <= Sign_Extend;		   			   
+		ALUOp_ex 				 <= ALUop;			       
+		ALUSrc_ex 				 <= ALUSrc;
+		register_address_ex_1    <= write_reg_address_1;
+		register_address_ex_0 	 <= write_reg_address_0;
+		PC_plus_4_ex 			 <= PC_plus_4_id_ex;
+		RegDst_ex 				 <= RegDst;
+		Regwrite_id_ex 		     <= Regwrite_ctl_out;
+		MemWrite_id_ex 			 <= MemWrite;
+		MemtoReg_id_ex 			 <= MemtoReg;
+		MemRead_id_ex 			 <= MemRead;
+		Branch_id_ex 			 <= Branch;
+		Instruction_Ex_in        <= Instruction_ID_out;
+end if;
+END PROCESS;
+
+ex_mem:PROCESS(clock)
+BEGIN
+	if(reset = '1') then
+		Regwrite_mem  	     	 <=	'0';	           
+		MemWrite_mem  	     	 <=	'0';		          
+		MemtoReg_mem 	     	 <=	(OTHERS=>'0');		   	       
+		MemRead_mem  	     	 <=	'0';		  	      
+		Zero_mem  	 	 	 	 <=	'0';		      
+		ALU_Result_mem  	 	 <=	(OTHERS=>'0');		 
+		Add_Result_mem  		 <=	(OTHERS=>'0');			  
+		write_reg_address_mem 	 <=	(OTHERS=>'0');            
+		read_reg_2_mem 			 <=	(OTHERS=>'0');	         
+		PC_plus_4_mem		  	 <=	(OTHERS=>'0');						
+		Branch_mem    		 	 <=	(OTHERS=>'0');             
+		Instruction_mem_in    	 <=	(OTHERS=>'0');
+	elsif( clock'EVENT  AND  clock = '1' )then
 --------------------------memory - in section 4 ----------------------------------------------		 
-	Regwrite_mem  	     	 <= Regwrite_ex_mem;	           
-	MemWrite_mem  	     	 <= MemWrite_ex_mem;		          
-	MemtoReg_mem 	     	 <= MemtoReg_ex_mem;		   	       
-	MemRead_mem  	     	 <= MemRead_ex_mem;		  	      
-	Zero_mem  	 	 	 	 <= Zero_ex_mem;		      
-	ALU_Result_mem  	 	 <= ALU_Result_ex_mem;		 
-	Add_Result_mem  		 <= Add_Result_ex_mem;			  
-	write_reg_address_mem 	 <= write_register_address_ex_mem;            
-	read_reg_2_mem 			 <= read_reg_2_ex_mem;	         
-	PC_plus_4_mem		  	 <= PC_plus_4_ex_mem;						
-	Branch_mem    		 	 <= Branch_ex_mem;              
-	Instruction_mem_in    	 <= Instruction_Ex_out;
+		Regwrite_mem  	     	 <= Regwrite_ex_mem;	           
+		MemWrite_mem  	     	 <= MemWrite_ex_mem;		          
+		MemtoReg_mem 	     	 <= MemtoReg_ex_mem;		   	       
+		MemRead_mem  	     	 <= MemRead_ex_mem;		  	      
+		Zero_mem  	 	 	 	 <= Zero_ex_mem;		      
+		ALU_Result_mem  	 	 <= ALU_Result_ex_mem;		 
+		Add_Result_mem  		 <= Add_Result_ex_mem;			  
+		write_reg_address_mem 	 <= write_register_address_ex_mem;            
+		read_reg_2_mem 			 <= read_reg_2_ex_mem;	         
+		PC_plus_4_mem		  	 <= PC_plus_4_ex_mem;						
+		Branch_mem    		 	 <= Branch_ex_mem;              
+		Instruction_mem_in    	 <= Instruction_Ex_out;
+			
+end if;
+END PROCESS;
+
+mem_wb:PROCESS(clock)
+BEGIN
+	if(reset = '1') then
+		RegWrite_in				 <=	'0';
+		MemtoReg_wb 			 <=	(OTHERS=>'0'); 
+		PC_plus_4_wb       		 <=	(OTHERS=>'0');
+		write_register_address   <=	(OTHERS=>'0');
+		ALU_Result_wb 			 <=	(OTHERS=>'0');
+		read_data_wb  			 <=	(OTHERS=>'0');
+		Instruction_wb           <=	(OTHERS=>'0');
+	elsif( clock'EVENT  AND  clock = '1' )then
 ---------------------------write back in 	------------------------------------------------
-	RegWrite_in				 <= Regwrite_mem_wb ;
-	MemtoReg_wb 			 <= MemtoReg_mem_wb; 
-	PC_plus_4_wb       		 <= PC_plus_4_mem_wb;
-	write_register_address   <= write_reg_address_mem_wb;
-	ALU_Result_wb 			 <= ALU_Result_mem_wb;
-	read_data_wb  			 <= read_data_mem_wb;
-	Instruction_wb           <= Instruction_mem_out;
-------------------------------------------------------------------------------------------
-				
-				
-			end if;
+		RegWrite_in				 <= Regwrite_mem_wb ;
+		MemtoReg_wb 			 <= MemtoReg_mem_wb; 
+		PC_plus_4_wb       		 <= PC_plus_4_mem_wb;
+		write_register_address   <= write_reg_address_mem_wb;
+		ALU_Result_wb 			 <= ALU_Result_mem_wb;
+		read_data_wb  			 <= read_data_mem_wb;
+		Instruction_wb           <= Instruction_mem_out;
+------------------------------------------------------------------------------------------	
+end if;
 END PROCESS;
 	
 -------------------------------CLKCNT register-------------------------------------------	
@@ -354,11 +440,14 @@ clkcnt_proc:PROCESS(clock)
 		BEGIN
 			if(reset='1') then
 				clkcnt_temp:= 0;
+				CLKCNT<=(OTHERS=>'0');
 			elsif( clock'EVENT  AND  clock = '1' )then
 				clkcnt_temp:=clkcnt_temp+1;
 				CLKCNT<= CONV_STD_LOGIC_VECTOR( clkcnt_temp, clkcnt_size ) ;
 			end if;
 	END PROCESS;
+
+	
 
 END structure;
 

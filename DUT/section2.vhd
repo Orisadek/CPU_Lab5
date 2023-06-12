@@ -34,6 +34,7 @@ generic ( AluOpSize : positive := 9;
 			Branch 				     : OUT STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			JumpAdress		         : OUT STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Instruction_out 		 : OUT STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			stall 					 : IN 	STD_LOGIC;
 			Instruction 			 : IN  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			RegWrite_in 			 : IN  STD_LOGIC;
 			PC_plus_4   			 : IN  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
@@ -46,8 +47,16 @@ END sectionTwo;
 ARCHITECTURE behavior OF sectionTwo IS
 	SIGNAL Instruction_immediate_value_I	: STD_LOGIC_VECTOR( Imm_val_I-1 DOWNTO 0 );
 	SIGNAL Instruction_immediate_value_J	: STD_LOGIC_VECTOR( Imm_val_J-1 DOWNTO 0 );
-	SIGNAL Sign_extend_J 			        :  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );			
-	
+	SIGNAL Sign_extend_J 			        : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );			
+	SIGNAL RegDst_local 					: STD_LOGIC_VECTOR( 1 DOWNTO 0 );
+	SIGNAL Regwrite_out_local 				: STD_LOGIC;
+	SIGNAL ALUop_local 					 	: STD_LOGIC_VECTOR(  AluOpSize-1 DOWNTO 0 );
+	SIGNAL ALUSrc_local 					: STD_LOGIC;
+	SIGNAL MemWrite_local 				 	: STD_LOGIC;
+	SIGNAL MemtoReg_local 				 	: STD_LOGIC_VECTOR( 1 DOWNTO 0 );
+	SIGNAL MemRead_local 				 	: STD_LOGIC;
+	SIGNAL Jump_local 					 	: STD_LOGIC_VECTOR( 2 DOWNTO 0 );
+	SIGNAL Branch_local 				    : STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 BEGIN
 ----------------------------forward signals------------------------------------------
    	write_reg_address_1	<= Instruction( 15 DOWNTO 11 );
@@ -66,7 +75,18 @@ BEGIN
 	
 	Sign_extend_J<=B"000000" & Instruction_immediate_value_J WHEN (Instruction_immediate_value_J(Imm_val_J-1) = '0')  ELSE
 		B"111111" & Instruction_immediate_value_J when (Instruction_immediate_value_J(Imm_val_J-1) = '1');
-
+	
+	RegDst 			<= '0' when stall='1' else RegDst_local; 
+	Regwrite_out 	<= '0' when stall='1' else Regwrite_out_local; 
+	ALUop			<= (others=>'0') when stall='1' else ALUop_local; 
+	ALUSrc			<= '0' when stall='1' else ALUSrc_local; 
+	MemWrite        <= '0' when stall='1' else MemWrite_local; 
+	MemtoReg_local  <= (others=>'0') when stall='1' else MemtoReg_local; 
+	MemRead     	<= '0' when stall='1' else MemRead_local; 
+	Jump    		<= (others=>'0') when stall='1' else Jump_local; 
+	Branch      	<= (others=>'0') when stall='1' else Branch_local; 
+	
+	
 	decode_port_map : Idecode 
 		PORT MAP(
 			read_data_1					=> read_data_1,
@@ -82,15 +102,15 @@ BEGIN
 	CTL:   control
 	PORT MAP ( 	Opcode 			=> Instruction( 31 DOWNTO 26 ),
 				func_op     	=> Instruction( 5 DOWNTO 0 ),
-				RegDst 			=> RegDst,
-				ALUSrc 			=> ALUSrc,
-				MemtoReg 		=> MemtoReg,
-				RegWrite 		=> Regwrite_out,
-				MemRead 		=> MemRead,
-				MemWrite 		=> MemWrite,
-				Branch 			=> Branch,
-				Jump            => Jump,
-				ALUop 			=> ALUop,
+				RegDst 			=> RegDst_local,
+				ALUSrc 			=> ALUSrc_local,
+				MemtoReg 		=> MemtoReg_local,
+				RegWrite 		=> Regwrite_out_local,
+				MemRead 		=> MemRead_local,
+				MemWrite 		=> MemWrite_local,
+				Branch 			=> Branch_local,
+				Jump            => Jump_local,
+				ALUop 			=> ALUop_local,
                 clock 			=> clock,
 				reset 			=> reset );
 				

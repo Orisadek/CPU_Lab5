@@ -23,6 +23,7 @@ generic ( ResSize : positive := 32;
         	 clock, reset 		: IN 	STD_LOGIC;
 			 data_reg 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			 Jump 				: IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
+			 PCWriteDisable     : IN   STD_LOGIC;
 			 PCSrc       		: IN   STD_LOGIC; 
 			 JumpAdress			: IN   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 )
 			 );
@@ -75,11 +76,12 @@ inst_memory: altsyncram
 					
 	fetch_proc:process(clock)
 		BEGIN
-		--	WAIT UNTIL ( clock'EVENT ) AND ( clock = '1' );
 			IF (reset = '1')THEN
 				   PC(PC_size-1 DOWNTO 2) <= "00000000" ; 
-			elsif( clock'EVENT  AND clock = '1') then
+			elsif( clock'EVENT  AND clock = '1' and not (PCWriteDisable='1')) then
 				   PC(PC_size-1 DOWNTO 2 ) <= next_PC;
+			elsif( clock'EVENT  AND clock = '1' and  PCWriteDisable='1') then
+				null;
 			END IF;
 	END process;
 END behavior;

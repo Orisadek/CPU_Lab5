@@ -17,7 +17,7 @@ COMPONENT MIPS IS
 			stall_size: positive := 8;
 			cmd_size: positive := 5); 
 			
-	PORT( reset, clock					: IN 	STD_LOGIC; 
+	PORT( reset, clock  				: IN 	STD_LOGIC; 
 	      BPADD  						: IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
 		-- Output important signals to pins for easy display in Simulator
 		PC								: OUT  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
@@ -30,22 +30,21 @@ COMPONENT MIPS IS
 		ID_read_data_1, ID_read_data_2, ID_write_data
 										: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 		ID_Regwrite					    : OUT 	STD_LOGIC;
-		
 		--------------------------------Ex------------------------------------
-		Ex_Instruction				: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-		Ex_ALU_result				: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-		Ex_Zero     			    : OUT 	STD_LOGIC;
-		Ex_ALUAinput,Ex_ALUBinput	: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+		Ex_Instruction					: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+		Ex_ALU_result					: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+		Ex_Zero     			    	: OUT 	STD_LOGIC;
+		Ex_ALUAinput,Ex_ALUBinput		: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 		---------------------------------Mem ------------------------------------------
-		Mem_Instruction				: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-		Mem_Memwrite				: OUT 	STD_LOGIC;
-		Mem_write_data              : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-		Mem_read_data               : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-		Mem_Branch                  : OUT 	STD_LOGIC_VECTOR(1 DOWNTO 0 );
-		Mem_address					: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+		Mem_Instruction					: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+		Mem_Memwrite					: OUT 	STD_LOGIC;
+		Mem_write_data              	: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+		Mem_read_data               	: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+		Mem_Branch                  	: OUT 	STD_LOGIC_VECTOR(1 DOWNTO 0 );
+		Mem_address						: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 		--------------------------------Wb---------------------------------------------
-		WB_Instruction				: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-		Mem_MemToReg 				: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 )
+		WB_Instruction					: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+		Mem_MemToReg 					: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 )
 		 );
 END 	COMPONENT;
 
@@ -76,6 +75,7 @@ generic ( AluOpSize : positive := 9;
 			Jump 					 : OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 			Branch 				     : OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			Instruction_out 		 : OUT  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			stall 					 : IN 	STD_LOGIC;
 			Instruction 			 : IN  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			RegWrite_in 			 : IN  STD_LOGIC;
 			PC_plus_4   			 : IN  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
@@ -171,6 +171,7 @@ generic ( ResSize : positive := 32;
 			 PC_out 			: OUT	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
         	 Add_result 		: IN 	STD_LOGIC_VECTOR( change_size-1 DOWNTO 0 );
         	 clock, reset 		: IN 	STD_LOGIC;
+			 PCWriteDisable     : IN   STD_LOGIC;
 			 data_reg 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			 PCSrc       		: IN   STD_LOGIC; 
 			 Jump 				: IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
@@ -262,5 +263,21 @@ COMPONENT jmp_unit IS
 
 END COMPONENT;
 
-  
+COMPONENT stallUnit IS
+--									*********Constants Delclaration**********								
+generic ( 
+		ResSize : positive := 32
+		
+		);
+	  PORT(	
+			PCWriteDisable			: OUT 	STD_LOGIC;
+			If_idWriteDisable		: OUT 	STD_LOGIC;
+			stall 					: OUT 	STD_LOGIC;
+			id_ex_reg_write    		: IN 	STD_LOGIC;
+			ex_mem_reg_write    	: IN 	STD_LOGIC;
+			mem_wb_reg_write    	: IN 	STD_LOGIC;
+			Instruction             : IN  	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			clock,reset				: IN 	STD_LOGIC );
+END COMPONENT;
+ 
 end aux_package;
