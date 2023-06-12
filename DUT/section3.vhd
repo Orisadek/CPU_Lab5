@@ -25,6 +25,7 @@ generic ( AluOpSize 	: positive := 9;
 	PORT(	Read_data_1 			 : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Read_data_2 			 : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Sign_extend 		     : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			Instruction 			 : IN   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			ALUOp 					 : IN 	STD_LOGIC_VECTOR( AluOpSize-1 DOWNTO 0 );
 			ALUSrc 					 : IN 	STD_LOGIC;
 			PC_plus_4 				 : IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
@@ -39,6 +40,8 @@ generic ( AluOpSize 	: positive := 9;
 			--Sign_extend_J   		 : IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			--Jump            		 : IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 			Branch 					 : IN 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
+			Instruction_out 		 : OUT   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			Ainput, Binput      	 : OUT  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Branch_out 				 : OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			--Jump_out        		 : OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 			--Sign_extend_J_out   	 : OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
@@ -69,6 +72,7 @@ MemtoReg_out  		<= MemtoReg_in;
 MemRead_out   		<= MemRead_in;		
 Read_data_1_out 	<= Read_data_1;
 Read_data_2_out		<= Read_data_2;
+Instruction_out     <= Instruction;
 --Sign_extend_J_out   <= Sign_extend_J;
 PC_plus_4_out   	<= PC_plus_4;
 --Jump_out			<= Jump;
@@ -83,6 +87,8 @@ Branch_out          <= Branch;
 	EXE:  Execute
    	PORT MAP (	Read_data_1 	=>Read_data_1,
 				Read_data_2 	=>Read_data_2,
+				Ainput_out      => Ainput,
+				Binput_out      => Binput,
 				Sign_extend 	=> Sign_extend,
 				ALUOp 			=> ALUop,
 				ALUSrc 			=> ALUSrc,	

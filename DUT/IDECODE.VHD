@@ -57,7 +57,7 @@ PROCESS
 					-- Write back to register - don't write to register 0
   		ELSIF (RegWrite = '1' AND write_register_address/= 0 ) THEN
 		      register_array(CONV_INTEGER(write_register_address)) <= write_data;
-			  --register_array(ResSize-1) <= zeroes(ResSize-1 downto PC_size )&PC_plus_4_mem_wb;
+			  
 		END IF;
 	END PROCESS;
 END behavior;

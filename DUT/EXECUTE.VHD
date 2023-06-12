@@ -25,6 +25,7 @@ generic ( AluOpSize 	: positive := 9;
 			ALUOp 					 : IN 	STD_LOGIC_VECTOR( AluOpSize-1 DOWNTO 0 );
 			ALUSrc 					 : IN 	STD_LOGIC;
 			clock, reset			 : IN 	STD_LOGIC;
+			Ainput_out, Binput_out 	 : OUT STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			Zero 					 : OUT	STD_LOGIC;
 			ALU_Result 				 : OUT	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 )
 			 );
@@ -69,7 +70,8 @@ BEGIN
 	
 	---------Zero signal --------------------------	    
 	Zero <= '1' when ALU_output_mux= zeroes else '0';
-
+	Ainput_out<=Ainput;
+	Binput_out<=Binput;
 PROCESS ( ALU_ctl, Ainput, Binput )
 	variable alu_tmp : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	variable alu_mult : STD_LOGIC_VECTOR( mult_size-1 DOWNTO 0 );

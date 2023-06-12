@@ -23,7 +23,7 @@ generic ( ResSize : positive := 32;
         	 clock, reset 		: IN 	STD_LOGIC;
 			 data_reg 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			 Jump 				: IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
-			 PCSrc       		: IN   STD_LOGIC_VECTOR( 1 DOWNTO 0 ); 
+			 PCSrc       		: IN   STD_LOGIC; 
 			 JumpAdress			: IN   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 )
 			 );
 END Ifetch;
@@ -69,8 +69,8 @@ inst_memory: altsyncram
 					
 		next_PC <= X"00" WHEN Reset = '1' ELSE
 				mux_jmp when not (Jump="000") else
-				PC_plus_4( PC_size-1 DOWNTO 2 ) when PCSrc = "00" else
-				Add_result when PCSrc = "01" else
+				PC_plus_4( PC_size-1 DOWNTO 2 ) when PCSrc = '0' else
+				Add_result when PCSrc = '1' else
 				(others=>'0');
 					
 	fetch_proc:process(clock)
