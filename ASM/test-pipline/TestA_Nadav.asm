@@ -36,10 +36,15 @@ addi $s4,$zero,136
 jal label
 add $t8, $zero, $zero
 label:
-addi $s4,$zero,136
+addi $s4,$zero,12420
 add $t8, $zero, $zero
 add $t8, $zero, $zero
 add $t8, $zero, $zero
 jr $s4
+add $t8, $zero, $zero
+add $t8, $zero, $zero
+add $t8, $zero, $zero
+END: 	sw $t5,f	#save f
+
 #j label
 

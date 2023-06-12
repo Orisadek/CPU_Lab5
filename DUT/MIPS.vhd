@@ -130,7 +130,7 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL	ALU_Result_mem  			   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL	Add_Result_mem  			   : STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
 	SIGNAL	write_reg_address_mem    	   : STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
-	SIGNAL  Instruction_mem_in			   :  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	SIGNAL  Instruction_mem_in			   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL  read_reg_1_mem 		           : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL  read_reg_2_mem 		           : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL  PC_plus_4_mem				   : STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
@@ -142,16 +142,17 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL	ALU_Result_mem_wb  			   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL	read_data_mem_wb  			   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL	Add_Result_mem_wb  			   : STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
-	SIGNAL  Instruction_mem_out 		   :  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	SIGNAL  Instruction_mem_out 		   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL	read_reg_1_mem_wb     		   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL  PC_plus_4_mem_wb			   : STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 ---------------------------write back in ------------------------------------------------
 	SIGNAL	Regwrite_wb      	           : STD_LOGIC;
+	SIGNAL  PC_plus_4_wb    			   : STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 	SIGNAL	MemtoReg_wb  		   	       : STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 	SIGNAL	write_reg_address_wb           : STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 	SIGNAL	ALU_Result_wb  			  	   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL	read_data_wb  			   	   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-	SIGNAL  Instruction_wb 	        	   :  STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	SIGNAL  Instruction_wb 	        	   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 ------------------------------------------------------------------------------------------
 	
 BEGIN
@@ -290,7 +291,7 @@ BEGIN
 ----------- Mux to bypass data memory for Rformat instructions  ---- change later
 write_data <=  ALU_Result_wb( ResSize-1 DOWNTO 0 ) WHEN ( MemtoReg_wb = "00" ) ELSE  --- to register file
 			   read_data_wb WHEN ( MemtoReg_wb = "01" ) ELSE  
-				zeroes(ResSize-1 downto PC_size )&PC_plus_4_mem_wb  WHEN ( MemtoReg_wb = "10" ) ELSE 			   
+			   zeroes(ResSize-1 downto PC_size )&PC_plus_4_wb  WHEN ( MemtoReg_wb = "10" ) ELSE 			   
 			   (others=>'0');
 	  
 -------------------------------forward the signals-------------------------------------------	
@@ -302,44 +303,45 @@ BEGIN
 	elsif( clock'EVENT  AND  clock = '1' )then		
 	PC		    			<= PC_out;
 	-------------------------Decode - IN section 2-------------------------------------------
-	Instruction_ID  		<= Instruction_If_Id;
-    PC_plus_4_ID			<= PC_plus_4_If_Id ;			      
+	Instruction_ID  		 <= Instruction_If_Id;
+    PC_plus_4_ID			 <= PC_plus_4_If_Id ;			      
 	------------------------Execute - in  section 3-------------------------------------
-	read_data_1_ex 			<= read_data_1_id_ex;	          
-	read_data_2_ex 			<= read_data_2_id_ex;		
-	Sign_extend_ex 			<= Sign_Extend;		   			   
-	ALUOp_ex 				<= ALUop;			       
-	ALUSrc_ex 				<= ALUSrc;
-	register_address_ex_1   <= write_reg_address_1;
-	register_address_ex_0 	<= write_reg_address_0;
-	PC_plus_4_ex 			<= PC_plus_4_id_ex;
-	RegDst_ex 				<= RegDst;
-	Regwrite_id_ex 		    <= Regwrite_ctl_out;
-	MemWrite_id_ex 			<= MemWrite;
-	MemtoReg_id_ex 			<= MemtoReg;
-	MemRead_id_ex 			<= MemRead;
-	Branch_id_ex 			<= Branch;
-	Instruction_Ex_in       <= Instruction_ID_out;
+	read_data_1_ex 			 <= read_data_1_id_ex;	          
+	read_data_2_ex 			 <= read_data_2_id_ex;		
+	Sign_extend_ex 			 <= Sign_Extend;		   			   
+	ALUOp_ex 				 <= ALUop;			       
+	ALUSrc_ex 				 <= ALUSrc;
+	register_address_ex_1    <= write_reg_address_1;
+	register_address_ex_0 	 <= write_reg_address_0;
+	PC_plus_4_ex 			 <= PC_plus_4_id_ex;
+	RegDst_ex 				 <= RegDst;
+	Regwrite_id_ex 		     <= Regwrite_ctl_out;
+	MemWrite_id_ex 			 <= MemWrite;
+	MemtoReg_id_ex 			 <= MemtoReg;
+	MemRead_id_ex 			 <= MemRead;
+	Branch_id_ex 			 <= Branch;
+	Instruction_Ex_in        <= Instruction_ID_out;
 --------------------------memory - in section 4 ----------------------------------------------		 
-	Regwrite_mem  	      <= Regwrite_ex_mem;	           
-	MemWrite_mem  	      <= MemWrite_ex_mem;		          
-	MemtoReg_mem 	      <= MemtoReg_ex_mem;		   	       
-	MemRead_mem  	      <= MemRead_ex_mem;		  	      
-	Zero_mem  	 	 	  <= Zero_ex_mem;		      
-	ALU_Result_mem  	  <= ALU_Result_ex_mem;		 
-	Add_Result_mem  	  <= Add_Result_ex_mem;			  
-	write_reg_address_mem <= write_register_address_ex_mem;            
-	read_reg_2_mem 		  <= read_reg_2_ex_mem;	         
-	PC_plus_4_mem		  <= PC_plus_4_ex_mem;						
-	Branch_mem    		  <= Branch_ex_mem;              
-	Instruction_mem_in    <= Instruction_Ex_out;
+	Regwrite_mem  	     	 <= Regwrite_ex_mem;	           
+	MemWrite_mem  	     	 <= MemWrite_ex_mem;		          
+	MemtoReg_mem 	     	 <= MemtoReg_ex_mem;		   	       
+	MemRead_mem  	     	 <= MemRead_ex_mem;		  	      
+	Zero_mem  	 	 	 	 <= Zero_ex_mem;		      
+	ALU_Result_mem  	 	 <= ALU_Result_ex_mem;		 
+	Add_Result_mem  		 <= Add_Result_ex_mem;			  
+	write_reg_address_mem 	 <= write_register_address_ex_mem;            
+	read_reg_2_mem 			 <= read_reg_2_ex_mem;	         
+	PC_plus_4_mem		  	 <= PC_plus_4_ex_mem;						
+	Branch_mem    		 	 <= Branch_ex_mem;              
+	Instruction_mem_in    	 <= Instruction_Ex_out;
 ---------------------------write back in 	------------------------------------------------
-	RegWrite_in				<= Regwrite_mem_wb ;
-	MemtoReg_wb 			<= MemtoReg_mem_wb; 	
-	write_register_address  <= write_reg_address_mem_wb;
-	ALU_Result_wb 			<= ALU_Result_mem_wb;
-	read_data_wb  			<= read_data_mem_wb;
-	Instruction_wb          <= Instruction_mem_out;
+	RegWrite_in				 <= Regwrite_mem_wb ;
+	MemtoReg_wb 			 <= MemtoReg_mem_wb; 
+	PC_plus_4_wb       		 <= PC_plus_4_mem_wb;
+	write_register_address   <= write_reg_address_mem_wb;
+	ALU_Result_wb 			 <= ALU_Result_mem_wb;
+	read_data_wb  			 <= read_data_mem_wb;
+	Instruction_wb           <= Instruction_mem_out;
 ------------------------------------------------------------------------------------------
 				
 				
