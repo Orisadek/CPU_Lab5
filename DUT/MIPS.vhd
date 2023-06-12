@@ -161,6 +161,7 @@ BEGIN
 				reset 			=> reset,
 				data_reg 	    => read_data_1_if,
 				PCSrc           => PCSrc,
+				Jump            => Jump,
 				JumpAdress		=> JumpAdress);
 
 
@@ -172,6 +173,7 @@ BEGIN
 				PC_plus_4_out 			 => PC_plus_4_id_ex,
         		Instruction 			 => Instruction_ID,
         		--read_data 				 => read_data,
+				JumpAdress               => JumpAdress,
 				RegWrite_in 			 => Regwrite_in,
 				MemtoReg 				 => MemtoReg,
 				RegDst 					 => RegDst,
@@ -231,7 +233,7 @@ BEGIN
 	PORT MAP (	
 				------------------Out---------------------------------
 				read_data 			=> read_data_mem_wb,
-				JumpAdress			=> JumpAdress,
+				--JumpAdress			=> JumpAdress,
 				PCSrc 	 			=> PCSrc,
 				RegWrite_out		=> Regwrite_mem_wb,
 				MemToReg_out		=> MemtoReg_mem_wb,

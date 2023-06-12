@@ -22,6 +22,7 @@ generic ( ResSize : positive := 32;
         	 Add_result 		: IN 	STD_LOGIC_VECTOR( change_size-1 DOWNTO 0 );
         	 clock, reset 		: IN 	STD_LOGIC;
 			 data_reg 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			 Jump 				: IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 			 PCSrc       		: IN   STD_LOGIC_VECTOR( 1 DOWNTO 0 ); 
 			 JumpAdress			: IN   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 )
 			 );
@@ -29,7 +30,7 @@ END Ifetch;
 
 ARCHITECTURE behavior OF Ifetch IS
 	SIGNAL PC, PC_plus_4 	 : STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); --note that we set an additional signal for pc+4 for convinience 
-	SIGNAL next_PC, Mem_Addr : STD_LOGIC_VECTOR( change_size-1 DOWNTO 0 );
+	SIGNAL next_PC, Mem_Addr,mux_jmp : STD_LOGIC_VECTOR( change_size-1 DOWNTO 0 );
 
 BEGIN
 						--ROM for Instruction Memory
@@ -41,7 +42,7 @@ inst_memory: altsyncram
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\pipline-test\test6_prog.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\pipline-test\test7_prog.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (
@@ -61,12 +62,15 @@ inst_memory: altsyncram
        	PC_plus_4( 1 DOWNTO 0 )  <= "00";
 						-- Mux to select Branch Address or PC + 4        
 	
-			
+		
+		mux_jmp	<=	data_reg(PC_size-1 DOWNTO 2 ) when Jump(1)='1' else --jr 
+				    JumpAdress( PC_size-1 DOWNTO 2 ) when (Jump(0)='1' or Jump(2)='1') else --jal,j
+					(others=>'0'); 
+					
 		next_PC <= X"00" WHEN Reset = '1' ELSE
+				mux_jmp when not (Jump="000") else
 				PC_plus_4( PC_size-1 DOWNTO 2 ) when PCSrc = "00" else
 				Add_result when PCSrc = "01" else
-				data_reg(PC_size-1 DOWNTO 2 ) when PCSrc = "10" else --jr 
-				JumpAdress( PC_size-1 DOWNTO 2 ) when PCSrc = "11" else --jal,j
 				(others=>'0');
 					
 	fetch_proc:process(clock)

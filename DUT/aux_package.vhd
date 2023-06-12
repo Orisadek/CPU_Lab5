@@ -45,6 +45,7 @@ generic ( AluOpSize : positive := 9;
 			PC_plus_4_out 			 : OUT STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
 			RegDst 					 : OUT STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			Regwrite_out 			 : OUT STD_LOGIC;
+			JumpAdress		         : OUT  	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			ALUop 					 : OUT STD_LOGIC_VECTOR(  AluOpSize-1 DOWNTO 0 );
 			ALUSrc 					 : OUT 	STD_LOGIC;
 			MemWrite 				 : OUT STD_LOGIC;
@@ -115,7 +116,7 @@ COMPONENT sectionFour IS
 		address_size: positive := 8
 		); 
 	PORT(	read_data 			: OUT 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-			JumpAdress			: OUT  	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			--JumpAdress			: OUT  	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			PCSrc 	 			: OUT   STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 			RegWrite_out		: OUT 	STD_LOGIC;
 			MemToReg_out		: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
@@ -153,6 +154,7 @@ generic ( ResSize : positive := 32;
         	 clock, reset 		: IN 	STD_LOGIC;
 			 data_reg 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			 PCSrc       		: IN   STD_LOGIC_VECTOR( 1 DOWNTO 0 ); 
+			 Jump 				: IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 			 JumpAdress			: IN   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 )
 			 );
 END COMPONENT;
