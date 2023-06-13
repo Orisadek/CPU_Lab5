@@ -19,8 +19,8 @@ ENTITY MIPS IS
 			stall_size: positive := 8;
 			cmd_size: positive := 5); 
 			
-	PORT( reset, clock				: IN 	STD_LOGIC; 
-	      BPADD  						: IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
+	PORT( reset, clock				    : IN 	STD_LOGIC; 
+	      BPADD  						: IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 2 ); 
 		-- Output important signals to pins for easy display in Simulator
 		PC								: OUT  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 		CLKCNT							: OUT  STD_LOGIC_VECTOR( clkcnt_size-1 DOWNTO 0 );
@@ -295,18 +295,23 @@ BEGIN
 				reset				=> reset
 				);
 				
-	stall:stallUnit
+				
+
+stall_port_map:stallUnit
 	PORT MAP (
-			PCWriteDisable		=>PCWriteDisable,
-			If_idWriteDisable	=>If_idWriteDisable,
-			stall 				=>stall,
-			id_ex_reg_write    	=>Regwrite_id_ex,
-			ex_mem_reg_write    =>Regwrite_mem,
-			mem_wb_reg_write    =>RegWrite_in,
-			Instruction         =>Instruction_ID,
-			clock				=>clock,
-			reset				=>reset );
-END stallUnit;
+			PCWriteDisable		   => PCWriteDisable,
+			If_idWriteDisable	   => If_idWriteDisable,
+			stall 				   => stall,
+			write_reg_address_ex   => write_register_address_ex_mem,
+			write_reg_address_mem  => write_reg_address_mem_wb, 
+			write_register_address => write_register_address,
+			id_ex_reg_write    	   => Regwrite_id_ex,
+			ex_mem_reg_write       => Regwrite_mem,
+			mem_wb_reg_write       => RegWrite_in,
+			Instruction            => Instruction_ID,
+			clock				   => clock,
+			reset				   => reset );
+
 				
 
 ----------- Mux to bypass data memory for Rformat instructions  ---- change later
@@ -316,6 +321,7 @@ write_data <=  ALU_Result_wb( ResSize-1 DOWNTO 0 ) WHEN ( MemtoReg_wb = "00" ) E
 			   (others=>'0');
 	  
 -------------------------------forward the signals-------------------------------------------	
+
 
 forward:PROCESS(clock)
 BEGIN
@@ -328,7 +334,7 @@ END PROCESS;
 
 If_id:PROCESS(clock)
 BEGIN
-	if(reset = '1' or flush_if_id = '1') then
+	if(reset = '1') then
 		Instruction_ID <=	(OTHERS=>'0');
 		PC_plus_4_ID   <=	(OTHERS=>'0');
 	elsif( clock'EVENT  AND  clock = '1' and not(If_idWriteDisable='1'))then	
@@ -337,6 +343,9 @@ BEGIN
 		PC_plus_4_ID			 <= PC_plus_4_If_Id ;
 	elsif( clock'EVENT  AND  clock = '1' and If_idWriteDisable='1')then
 		null;
+	elsif( clock'EVENT  AND  clock = '1' and flush_if_id='1')then 
+		Instruction_ID  		 <= (OTHERS=>'0');
+		PC_plus_4_ID			 <= (OTHERS=>'0'); 
 	end if;
 END PROCESS;
 
@@ -358,7 +367,7 @@ BEGIN
 		MemRead_id_ex 			 <=	'0';
 		Branch_id_ex 			 <=	(OTHERS=>'0');
 		Instruction_Ex_in        <=	(OTHERS=>'0');
-	elsif( clock'EVENT  AND  clock = '1' )then
+	elsif( clock'EVENT  AND  clock = '1' and not (flush_id_ex='1'))then
 	------------------------Execute - in  section 3-------------------------------------
 		read_data_1_ex 			 <= read_data_1_id_ex;	          
 		read_data_2_ex 			 <= read_data_2_id_ex;		
@@ -375,6 +384,22 @@ BEGIN
 		MemRead_id_ex 			 <= MemRead;
 		Branch_id_ex 			 <= Branch;
 		Instruction_Ex_in        <= Instruction_ID_out;
+	elsif( clock'EVENT  AND  clock = '1' and  flush_id_ex='1')then
+		read_data_1_ex 			 <=	(OTHERS=>'0');	          
+		read_data_2_ex 			 <=	(OTHERS=>'0');	
+		Sign_extend_ex 			 <=	(OTHERS=>'0');		   			   
+		ALUOp_ex 				 <=	(OTHERS=>'0');			       
+		ALUSrc_ex 				 <=	'0';
+		register_address_ex_1    <=	(OTHERS=>'0');
+		register_address_ex_0 	 <=	(OTHERS=>'0');
+		PC_plus_4_ex 			 <=	(OTHERS=>'0');
+		RegDst_ex 				 <=	(OTHERS=>'0');
+		Regwrite_id_ex 		     <=	'0';
+		MemWrite_id_ex 			 <=	'0';
+		MemtoReg_id_ex 			 <=	(OTHERS=>'0');
+		MemRead_id_ex 			 <=	'0';
+		Branch_id_ex 			 <=	(OTHERS=>'0');
+		Instruction_Ex_in        <=	(OTHERS=>'0');
 end if;
 END PROCESS;
 
@@ -393,7 +418,7 @@ BEGIN
 		PC_plus_4_mem		  	 <=	(OTHERS=>'0');						
 		Branch_mem    		 	 <=	(OTHERS=>'0');             
 		Instruction_mem_in    	 <=	(OTHERS=>'0');
-	elsif( clock'EVENT  AND  clock = '1' )then
+	elsif( clock'EVENT  AND  clock = '1' and not (flush_ex_mem='1') )then
 --------------------------memory - in section 4 ----------------------------------------------		 
 		Regwrite_mem  	     	 <= Regwrite_ex_mem;	           
 		MemWrite_mem  	     	 <= MemWrite_ex_mem;		          
@@ -407,8 +432,20 @@ BEGIN
 		PC_plus_4_mem		  	 <= PC_plus_4_ex_mem;						
 		Branch_mem    		 	 <= Branch_ex_mem;              
 		Instruction_mem_in    	 <= Instruction_Ex_out;
-			
-end if;
+	elsif( clock'EVENT  AND  clock = '1' and  flush_ex_mem='1' )then
+		Regwrite_mem  	     	 <=	'0';	           
+		MemWrite_mem  	     	 <=	'0';		          
+		MemtoReg_mem 	     	 <=	(OTHERS=>'0');		   	       
+		MemRead_mem  	     	 <=	'0';		  	      
+		Zero_mem  	 	 	 	 <=	'0';		      
+		ALU_Result_mem  	 	 <=	(OTHERS=>'0');		 
+		Add_Result_mem  		 <=	(OTHERS=>'0');			  
+		write_reg_address_mem 	 <=	(OTHERS=>'0');            
+		read_reg_2_mem 			 <=	(OTHERS=>'0');	         
+		PC_plus_4_mem		  	 <=	(OTHERS=>'0');						
+		Branch_mem    		 	 <=	(OTHERS=>'0');             
+		Instruction_mem_in    	 <=	(OTHERS=>'0');
+	end if;
 END PROCESS;
 
 mem_wb:PROCESS(clock)
@@ -445,9 +482,42 @@ clkcnt_proc:PROCESS(clock)
 				clkcnt_temp:=clkcnt_temp+1;
 				CLKCNT<= CONV_STD_LOGIC_VECTOR( clkcnt_temp, clkcnt_size ) ;
 			end if;
-	END PROCESS;
+END PROCESS;
 
-	
+
+flush_if_id  <= '1' when PCSrc='1' or not (Jump = "000") else '0';
+flush_id_ex  <= '1' when PCSrc='1' else '0';
+flush_ex_mem <= '1' when PCSrc='1' else '0';
+
+-------------------------------FHCNT register-------------------------------------------	
+
+flush_proc:PROCESS(flush_if_id,flush_id_ex,flush_ex_mem,clock)
+variable flush_temp:integer;
+BEGIN
+	if(reset = '1') then
+		flush_temp := 0;
+		FHCNT <= (OTHERS=>'0');
+	elsif(clock'EVENT  AND  clock = '1' and flush_if_id = '1' and flush_id_ex = '1' and flush_ex_mem= '1' ) then
+		flush_temp:=flush_temp+3;
+		FHCNT<= CONV_STD_LOGIC_VECTOR( flush_temp, flush_size ) ;
+	elsif(clock'EVENT  AND  clock = '1' and flush_if_id = '1') then
+		flush_temp:=flush_temp+1;
+		FHCNT<= CONV_STD_LOGIC_VECTOR( flush_temp, flush_size ) ;
+	end if;
+END PROCESS;	
+
+-------------------------------FHCNT register-------------------------------------------	
+stall_count:PROCESS(stall,clock)
+variable stall_temp:integer;
+BEGIN
+	if(reset = '1') then
+		stall_temp := 0;
+		STCNT <=(OTHERS=>'0');
+	elsif(clock'EVENT  AND  clock = '1' and stall = '1') then
+		stall_temp:=stall_temp+1;
+		STCNT<= CONV_STD_LOGIC_VECTOR( stall_temp, stall_size ) ;
+	end if;
+END PROCESS;
 
 END structure;
 

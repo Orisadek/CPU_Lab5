@@ -18,7 +18,7 @@ COMPONENT MIPS IS
 			cmd_size: positive := 5); 
 			
 	PORT( reset, clock  				: IN 	STD_LOGIC; 
-	      BPADD  						: IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
+	      BPADD  						: IN 	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 2 ); 
 		-- Output important signals to pins for easy display in Simulator
 		PC								: OUT  STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 		CLKCNT							: OUT  STD_LOGIC_VECTOR( clkcnt_size-1 DOWNTO 0 );
@@ -263,21 +263,23 @@ COMPONENT jmp_unit IS
 
 END COMPONENT;
 
+
 COMPONENT stallUnit IS
 --									*********Constants Delclaration**********								
-generic ( 
-		ResSize : positive := 32
-		
-		);
+generic ( ResSize : positive := 32;
+		  cmd_size: positive := 5);
 	  PORT(	
-			PCWriteDisable			: OUT 	STD_LOGIC;
-			If_idWriteDisable		: OUT 	STD_LOGIC;
-			stall 					: OUT 	STD_LOGIC;
-			id_ex_reg_write    		: IN 	STD_LOGIC;
-			ex_mem_reg_write    	: IN 	STD_LOGIC;
-			mem_wb_reg_write    	: IN 	STD_LOGIC;
-			Instruction             : IN  	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-			clock,reset				: IN 	STD_LOGIC );
+			PCWriteDisable					: OUT 	STD_LOGIC;
+			If_idWriteDisable				: OUT 	STD_LOGIC;
+			stall 							: OUT 	STD_LOGIC;
+			write_reg_address_ex    		: IN  	STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
+			write_reg_address_mem 		    : IN  	STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
+			write_register_address 	    	: IN  	STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 ); 
+			id_ex_reg_write    				: IN 	STD_LOGIC;
+			ex_mem_reg_write    			: IN 	STD_LOGIC;
+			mem_wb_reg_write    			: IN 	STD_LOGIC;
+			Instruction             		: IN  	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+			clock,reset						: IN 	STD_LOGIC );
 END COMPONENT;
  
 end aux_package;

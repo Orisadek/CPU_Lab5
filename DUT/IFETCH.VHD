@@ -23,9 +23,9 @@ generic ( ResSize : positive := 32;
         	 clock, reset 		: IN 	STD_LOGIC;
 			 data_reg 			: IN 	STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 			 Jump 				: IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
-			 PCWriteDisable     : IN   STD_LOGIC;
-			 PCSrc       		: IN   STD_LOGIC; 
-			 JumpAdress			: IN   STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 )
+			 PCWriteDisable     : IN    STD_LOGIC;
+			 PCSrc       		: IN    STD_LOGIC; 
+			 JumpAdress			: IN    STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 )
 			 );
 END Ifetch;
 
@@ -43,7 +43,7 @@ inst_memory: altsyncram
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\pipline-test\nadav2_prog.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\stall_test\test3_prog.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (
@@ -70,18 +70,20 @@ inst_memory: altsyncram
 					
 		next_PC <= X"00" WHEN Reset = '1' ELSE
 				mux_jmp when not (Jump="000") else
-				PC_plus_4( PC_size-1 DOWNTO 2 ) when PCSrc = '0' else
-				Add_result when PCSrc = '1' else
+				PC_plus_4( PC_size-1 DOWNTO 2 ) when PCSrc = '0' and not (PCWriteDisable='1') else
+				Add_result when PCSrc = '1' else 
+				PC(PC_size-1 DOWNTO 2 ) when PCWriteDisable='1' else 
 				(others=>'0');
 					
 	fetch_proc:process(clock)
+		
 		BEGIN
 			IF (reset = '1')THEN
 				   PC(PC_size-1 DOWNTO 2) <= "00000000" ; 
-			elsif( clock'EVENT  AND clock = '1' and not (PCWriteDisable='1')) then
+			elsif(clock'EVENT  AND clock = '1' and not (PCWriteDisable='1')) then
 				   PC(PC_size-1 DOWNTO 2 ) <= next_PC;
-			elsif( clock'EVENT  AND clock = '1' and  PCWriteDisable='1') then
-				null;
+			elsif(clock'EVENT  AND clock = '1' and  PCWriteDisable='1') then
+					null;
 			END IF;
 	END process;
 END behavior;

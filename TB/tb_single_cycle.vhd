@@ -27,7 +27,7 @@ ARCHITECTURE struct OF MIPS_tb IS
 
    -- Internal signal declarations
     signal reset, clock					    :  	STD_LOGIC; 
-	signal  BPADD  						:  	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 ); 
+	signal  BPADD  						    :  	STD_LOGIC_VECTOR( PC_size-1 DOWNTO 2 ); 
 		-- Output important signals to pins for easy display in Simulator
 	signal	PC								:   STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 	signal	CLKCNT							:   STD_LOGIC_VECTOR( clkcnt_size-1 DOWNTO 0 );

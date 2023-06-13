@@ -57,12 +57,14 @@ ARCHITECTURE behavior OF sectionTwo IS
 	SIGNAL MemRead_local 				 	: STD_LOGIC;
 	SIGNAL Jump_local 					 	: STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 	SIGNAL Branch_local 				    : STD_LOGIC_VECTOR( 1 DOWNTO 0 );
+	SIGNAL read_data_1_local 				: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	SIGNAL read_data_2_local 				: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 BEGIN
 ----------------------------forward signals------------------------------------------
    	write_reg_address_1	<= Instruction( 15 DOWNTO 11 );
    	write_reg_address_0 <= Instruction( 20 DOWNTO 16 );
 	PC_plus_4_out		<= PC_plus_4;
-	Instruction_out     <= Instruction;
+	Instruction_out     <= (others=>'0') when stall='1' else  Instruction;
 ------------------------------------------------------------------------------------------
 	
    	Instruction_immediate_value_I <= Instruction( Imm_val_I-1 DOWNTO 0 ); --decompositioning Immediate part of the intruction
@@ -76,21 +78,22 @@ BEGIN
 	Sign_extend_J<=B"000000" & Instruction_immediate_value_J WHEN (Instruction_immediate_value_J(Imm_val_J-1) = '0')  ELSE
 		B"111111" & Instruction_immediate_value_J when (Instruction_immediate_value_J(Imm_val_J-1) = '1');
 	
-	RegDst 			<= '0' when stall='1' else RegDst_local; 
+	RegDst 			<= "00" when stall='1' else RegDst_local; 
 	Regwrite_out 	<= '0' when stall='1' else Regwrite_out_local; 
 	ALUop			<= (others=>'0') when stall='1' else ALUop_local; 
 	ALUSrc			<= '0' when stall='1' else ALUSrc_local; 
 	MemWrite        <= '0' when stall='1' else MemWrite_local; 
-	MemtoReg_local  <= (others=>'0') when stall='1' else MemtoReg_local; 
+	MemtoReg        <= (others=>'0') when stall='1' else MemtoReg_local; 
 	MemRead     	<= '0' when stall='1' else MemRead_local; 
 	Jump    		<= (others=>'0') when stall='1' else Jump_local; 
 	Branch      	<= (others=>'0') when stall='1' else Branch_local; 
-	
+	read_data_1 	<= (others=>'0') when stall='1' else read_data_1_local;
+	read_data_2		<= (others=>'0') when stall='1' else read_data_2_local;
 	
 	decode_port_map : Idecode 
 		PORT MAP(
-			read_data_1					=> read_data_1,
-			read_data_2				 	=> read_data_2,
+			read_data_1					=> read_data_1_local,
+			read_data_2				 	=> read_data_2_local,
 			read_register_1_address	 	=> Instruction( 25 DOWNTO 21 ),
 			read_register_2_address	 	=> Instruction( 20 DOWNTO 16 ),
 			RegWrite 					=> RegWrite_in,

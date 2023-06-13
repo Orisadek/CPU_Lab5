@@ -32,7 +32,7 @@ BEGIN
 		widthad_a => 8,
 		lpm_type => "altsyncram",
 		outdata_reg_a => "UNREGISTERED",
-		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\pipline-test\nadav2_data.hex",
+		init_file => "C:\Users\orisa\source\modelSim\work\L1_Caches\stall_test\test3_data.hex",
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (
