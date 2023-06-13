@@ -61,7 +61,6 @@ END sectionThree;
 
 ARCHITECTURE behavior OF sectionThree IS
 SIGNAL Branch_Add 			: STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
-SIGNAL zeroes				: STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 
 
 BEGIN
@@ -73,9 +72,7 @@ MemRead_out   		<= MemRead_in;
 Read_data_1_out 	<= Read_data_1;
 Read_data_2_out		<= Read_data_2;
 Instruction_out     <= Instruction;
---Sign_extend_J_out   <= Sign_extend_J;
 PC_plus_4_out   	<= PC_plus_4;
---Jump_out			<= Jump;
 Branch_out          <= Branch;
 ---------------------------------start the Execute ------------------------------------------------------
 	

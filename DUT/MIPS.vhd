@@ -53,9 +53,9 @@ END 	MIPS;
 ARCHITECTURE structure OF MIPS IS
 				-- declare signals used to connect VHDL components
 	
-	SIGNAL ALU_result 					   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-	SIGNAL read_data 					   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-	SIGNAL Zero 						   : STD_LOGIC;
+	--SIGNAL ALU_result 					   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	--SIGNAL read_data 					   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
+	--SIGNAL Zero 						   : STD_LOGIC;
 	SIGNAL zeroes						   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	-------------------------Fetch - in --------------------------------------
 	SIGNAL PCSrc       					   : STD_LOGIC;
@@ -104,7 +104,6 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL	MemWrite_id_ex 				   : STD_LOGIC;
 	SIGNAL	MemtoReg_id_ex 				   : STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 	SIGNAL	MemRead_id_ex 				   : STD_LOGIC;
-	SIGNAL  Jump_id_ex           		   : STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 	SIGNAL  Branch_id_ex 				   : STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 ---------------------------Execute - out  section 3--------------------------------------------		
 	SIGNAL	Regwrite_ex_mem 	           : STD_LOGIC;
@@ -131,7 +130,6 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL	Add_Result_mem  			   : STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
 	SIGNAL	write_reg_address_mem    	   : STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 	SIGNAL  Instruction_mem_in			   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-	SIGNAL  read_reg_1_mem 		           : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL  read_reg_2_mem 		           : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL  PC_plus_4_mem				   : STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 	SIGNAL  Branch_mem                     : STD_LOGIC_VECTOR( 1 DOWNTO 0 );
@@ -141,15 +139,12 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL	write_reg_address_mem_wb       : STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 	SIGNAL	ALU_Result_mem_wb  			   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL	read_data_mem_wb  			   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-	SIGNAL	Add_Result_mem_wb  			   : STD_LOGIC_VECTOR( add_res_size-1 DOWNTO 0 );
 	SIGNAL  Instruction_mem_out 		   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
-	SIGNAL	read_reg_1_mem_wb     		   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL  PC_plus_4_mem_wb			   : STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 ---------------------------write back in ------------------------------------------------
 	SIGNAL	Regwrite_wb      	           : STD_LOGIC;
 	SIGNAL  PC_plus_4_wb    			   : STD_LOGIC_VECTOR( PC_size-1 DOWNTO 0 );
 	SIGNAL	MemtoReg_wb  		   	       : STD_LOGIC_VECTOR( 1 DOWNTO 0 );
-	SIGNAL	write_reg_address_wb           : STD_LOGIC_VECTOR( cmd_size-1 DOWNTO 0 );
 	SIGNAL	ALU_Result_wb  			  	   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL	read_data_wb  			   	   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
 	SIGNAL  Instruction_wb 	        	   : STD_LOGIC_VECTOR( ResSize-1 DOWNTO 0 );
